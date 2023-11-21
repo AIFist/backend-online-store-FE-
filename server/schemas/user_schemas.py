@@ -1,0 +1,6 @@
+from pydantic import BaseModel , EmailStr
+class GetUser(BaseModel):
+    """   This schema is for reciving user data  """
+    username: str
+    email :EmailStr
+    password: str
