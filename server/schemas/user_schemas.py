@@ -4,3 +4,7 @@ class GetUser(BaseModel):
     username: str
     email :EmailStr
     password: str
+
+class AuthUser(BaseModel):
+    email: EmailStr
+    password: str
