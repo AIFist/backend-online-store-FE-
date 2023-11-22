@@ -11,6 +11,8 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import TIMESTAMP, text
 
+
+# This revision should be run first 
 # revision identifiers, used by Alembic.
 revision: str = '22d92581c905'
 down_revision: Union[str, None] = None
