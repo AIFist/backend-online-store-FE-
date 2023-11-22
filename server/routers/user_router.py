@@ -9,7 +9,7 @@ router = APIRouter(prefix="/user", tags=["User CRUD"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-def create_user(user_data:user_schemas.GetUser = Body(...)):
+async def create_user(user_data:user_schemas.GetUser = Body(...)):
     """
     This endpoint to create user in the database 
 
@@ -32,7 +32,20 @@ def create_user(user_data:user_schemas.GetUser = Body(...)):
     return user
 
 @router.post('/login')
-def login(user_credentials:user_schemas.AuthUser):
+async def login(user_credentials:user_schemas.AuthUser):
+    """
+    This endpoint is for login user and user will provide email and passward
+
+    Args:
+        user_credentials (user_schemas.AuthUser): json of email and passward
+
+    Raises:
+        HTTPException:  when Invalid credentials  
+        HTTPException: when Invalid credentials 
+
+    Returns:
+        _type_: _description_
+    """
     user = session.query(User).filter(
         User.email == user_credentials.email).first()
 
@@ -46,3 +59,29 @@ def login(user_credentials:user_schemas.AuthUser):
 
     # return {"access_token": access_token, "token_type": "bearer"}
     return {"message": "Welcame and Happy Shopping"}
+
+
+@router.put("/update/{id}",status_code=status.HTTP_201_CREATED,)
+async def update_user(id: int, user_update : user_schemas.UpdateUser=Body(...)):
+    """
+    This is for updating username and email
+
+    Args:
+        id (int): primary key of the user
+        user_update (user_schemas.UpdateUser, optional): this will take username 
+        and email as in json . Defaults to Body(...).
+
+    Raises:
+        HTTPException: if user with given id do not exist then it will return 404
+
+    Returns:
+        json: updated users data
+    """
+    user_query = session.query(User).filter(User.id == id)
+    user = user_query.first()
+    if user == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {id} does not exist")
+    user_query.update(user_update.model_dump(), synchronize_session=False)
+    session.commit()
+    return user_query.first()
