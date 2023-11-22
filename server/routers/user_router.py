@@ -9,7 +9,7 @@ router = APIRouter(prefix="/user", tags=["User CRUD"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-def create_user(user_data:user_schemas.GetUser = Body(...)):
+async def create_user(user_data:user_schemas.GetUser = Body(...)):
     """
     This endpoint to create user in the database 
 
@@ -32,7 +32,7 @@ def create_user(user_data:user_schemas.GetUser = Body(...)):
     return user
 
 @router.post('/login')
-def login(user_credentials:user_schemas.AuthUser):
+async def login(user_credentials:user_schemas.AuthUser):
     """
     This endpoint is for login user and user will provide email and passward
 
@@ -62,7 +62,7 @@ def login(user_credentials:user_schemas.AuthUser):
 
 
 @router.put("/update/{id}",status_code=status.HTTP_201_CREATED,)
-def update_user(id: int, user_update : user_schemas.UpdateUser=Body(...)):
+async def update_user(id: int, user_update : user_schemas.UpdateUser=Body(...)):
     """
     This is for updating username and email
 
