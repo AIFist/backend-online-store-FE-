@@ -1,6 +1,7 @@
 from fastapi import Body, status,HTTPException
 from fastapi.routing import APIRouter
-from server.models.models import session , User
+from server.models.models1 import session
+from server.models.models import User
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import user_schemas
 from server.utils import hash_helper

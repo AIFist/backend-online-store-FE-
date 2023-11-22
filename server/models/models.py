@@ -1,7 +1,7 @@
 from sqlalchemy import  Column, Integer, String, ForeignKey,Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from server.db.db import Base, engine, db
+from server.db.db import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 Base = declarative_base()
@@ -70,43 +70,3 @@ user_purchase_association = Table('user_purchase', Base.metadata,
 )
 
 
-Base.metadata.create_all(engine)
-
-
-session = db
-
-if __name__ == "__main__":
-    from datetime import datetime
-
-    # Assuming you have already created the tables and the session
-    # session = db
-
-    # Adding a user
-    user1 = User(username='JohnDoe', email='john@example.com', password='password123')
-    session.add(user1)
-
-    # Adding a product category
-    electronics = ProductCategory(category_name='Electronics')
-    session.add(electronics)
-
-    # Adding a product
-    laptop_product = Product(
-        product_name='Laptop',
-        description='Powerful laptop',
-        price=999,
-        stock_quantity=10,
-        category=electronics
-    )
-    session.add(laptop_product)
-
-    # Adding a review
-    review = Review(
-        product=laptop_product,
-        user=user1,
-        rating=5,
-        comment='Great product!'
-    )
-    session.add(review)
-
-    # Committing the changes to the database
-    session.commit()
