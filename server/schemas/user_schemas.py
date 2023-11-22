@@ -8,3 +8,7 @@ class GetUser(BaseModel):
 class AuthUser(BaseModel):
     email: EmailStr
     password: str
+    
+class UpdateUser(BaseModel):
+    email : EmailStr
+    username : str
