@@ -24,7 +24,7 @@ class ProductCategory(Base):
     __tablename__ = 'product_categories'
     id = Column(Integer, primary_key=True)
     category_name = Column(String)
-    parent_category_id = Column(Integer, ForeignKey('product_categories.id'))
+    parent_category_id = Column(Integer, ForeignKey('product_categories.id',ondelete="SET NULL"))
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     # Establishing a relationship with itself (self-referencing)
@@ -43,7 +43,7 @@ class Product(Base):
     price = Column(Integer)
     stock_quantity = Column(Integer)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    category_id = Column(Integer, ForeignKey('product_categories.id'))
+    category_id = Column(Integer, ForeignKey('product_categories.id',ondelete="SET NULL"))
     
     # Establishing relationships
     category = relationship("ProductCategory", back_populates="products")
@@ -53,8 +53,8 @@ class Product(Base):
 class Review(Base):
     __tablename__ = 'reviews'
     id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey('products.id'))
-    user_id = Column(Integer, ForeignKey('users.id'))
+    product_id = Column(Integer, ForeignKey('products.id',ondelete="SET NULL"))
+    user_id = Column(Integer, ForeignKey('users.id',ondelete="SET NULL"))
     rating = Column(Integer)
     comment = Column(String)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
@@ -65,8 +65,8 @@ class Review(Base):
 
 # Association table for the many-to-many relationship between User and Product
 user_purchase_association = Table('user_purchase', Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('product_id', Integer, ForeignKey('products.id'))
+    Column('user_id', Integer, ForeignKey('users.id',ondelete="SET NULL")),
+    Column('product_id', Integer, ForeignKey('products.id',ondelete="SET NULL"))
 )
 
 

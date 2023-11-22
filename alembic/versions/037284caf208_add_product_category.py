@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column('category_name', sa.String(), nullable=True),
         sa.Column('parent_category_id', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.ForeignKeyConstraint(['parent_category_id'], ['product_categories.id']),
+        sa.ForeignKeyConstraint(['parent_category_id'], ['product_categories.id'], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint('id'),
     )
 
