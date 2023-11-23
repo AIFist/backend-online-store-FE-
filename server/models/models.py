@@ -43,7 +43,8 @@ class Product(Base):
     price = Column(Integer)
     stock_quantity = Column(Integer)
     product_size = Column(String)
-    image_path = Column(String) 
+    image_path = Column(String)
+    target_audience = Column(String)  
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     category_id = Column(Integer, ForeignKey('product_categories.id',ondelete="SET NULL"))
     
