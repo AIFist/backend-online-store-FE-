@@ -7,6 +7,6 @@ class ProductCreate(BaseModel):
     price: int
     stock_quantity: int
     product_size: str
-    image_path: Optional[str]
+    # image_path: Optional[str]
     target_audience: str
     category_id: Optional[int]
