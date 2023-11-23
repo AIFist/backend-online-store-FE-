@@ -59,7 +59,7 @@ class ProductImage(Base):
     __tablename__ = 'product_images'
     id = Column(Integer, primary_key=True)
     image_path = Column(String)
-    product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL", nullable=True))    
+    product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL"), nullable=True)    
     # Establishing relationship with Product
     product = relationship("Product", back_populates="images") 
 
