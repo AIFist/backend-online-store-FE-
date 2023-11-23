@@ -1,5 +1,8 @@
 from pydantic import BaseModel , EmailStr
-from typing import Optional
+from typing import List
+
+class ProductImageCreate(BaseModel):
+    image_path: str
 
 class ProductCreate(BaseModel):
     product_name: str
@@ -7,6 +10,6 @@ class ProductCreate(BaseModel):
     price: int
     stock_quantity: int
     product_size: str
-    image_path: Optional[str]
     target_audience: str
-    category_id: Optional[int]
+    category_id: int
+    images: List[ProductImageCreate]

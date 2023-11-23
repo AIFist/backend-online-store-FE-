@@ -10,6 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
+# do not run this 
 # revision this is for adding images path in prodcut and run it on 6th number
 # revision identifiers, used by Alembic.
 revision: str = '9f28ed173eb6'

@@ -43,7 +43,7 @@ class Product(Base):
     price = Column(Integer)
     stock_quantity = Column(Integer)
     product_size = Column(String)
-    image_path = Column(String)
+    SKU = Column(String)
     target_audience = Column(String)  
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     category_id = Column(Integer, ForeignKey('product_categories.id',ondelete="SET NULL"))
@@ -52,6 +52,17 @@ class Product(Base):
     category = relationship("ProductCategory", back_populates="products")
     buyers = relationship("User", secondary="user_purchase", back_populates="purchased_products")
     reviews = relationship("Review", back_populates="product")  # Added this line
+
+    images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
+
+class ProductImage(Base):
+    __tablename__ = 'product_images'
+    id = Column(Integer, primary_key=True)
+    image_path = Column(String)
+    product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL"), nullable=True)    
+    # Establishing relationship with Product
+    product = relationship("Product", back_populates="images") 
+
 
 class Review(Base):
     __tablename__ = 'reviews'
