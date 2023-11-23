@@ -66,12 +66,16 @@ async def update_product_category(id: int, prouctcat_update: product_cat_schemas
     Returns:
     - Updated ProductCategory.
     """
+    
     ProductCategory_query = session.query(ProductCategory).filter(ProductCategory.id == id)
     ProductCategory1 = ProductCategory_query.first()
     if ProductCategory1 is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {id} does not exist")
     
+    # if parent_category_id does not provided then keep parent_category_id same
+    if prouctcat_update.parent_category_id is None:
+        prouctcat_update.parent_category_id = ProductCategory1.parent_category_id
     ProductCategory_query.update(prouctcat_update.model_dump(), synchronize_session=False)
     session.commit()
     return ProductCategory_query.first()
