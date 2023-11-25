@@ -22,7 +22,8 @@ class User(Base):
     # Establishing relationships
     reviews = relationship("Review", back_populates="user")
     purchased_products = relationship("Product", secondary="user_purchase", back_populates="buyers")
-
+    cart_items = relationship("Cart", back_populates="user")
+    favorite_items = relationship("Favorite", back_populates="user")
 
 class ProductCategory(Base):
     __tablename__ = 'product_categories'
@@ -48,7 +49,8 @@ class Product(Base):
     stock_quantity = Column(Integer)
     product_size = Column(String)
     SKU = Column(String)
-    target_audience = Column(String)  
+    target_audience = Column(String)
+    product_color = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     category_id = Column(Integer, ForeignKey('product_categories.id',ondelete="SET NULL"))
     
@@ -58,6 +60,9 @@ class Product(Base):
     reviews = relationship("Review", back_populates="product")  # Added this line
 
     images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
+    carts = relationship("Cart", back_populates="product", cascade="all, delete-orphan")
+    favorites = relationship("Favorite", back_populates="product", cascade="all, delete-orphan")
+
 
 class Sales(Base):
     __tablename__ = 'sales'
@@ -92,6 +97,29 @@ class Review(Base):
     user = relationship("User", back_populates="reviews")
 
 
+class Cart(Base):
+    __tablename__ = 'carts'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="SET NULL"))  # Updated here
+    product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL")) 
+    quantity = Column(Integer, default=1)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+    # Establishing relationships
+    user = relationship("User", back_populates="cart_items")
+    product = relationship("Product", back_populates="carts")
+
+
+class Favorite(Base):
+    __tablename__ = 'favorites'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="SET NULL"))  # Updated here
+    product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL"))  
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+    # Establishing relationships
+    user = relationship("User", back_populates="favorite_items")
+    product = relationship("Product", back_populates="favorites")
 # Association table for the many-to-many relationship between User and Product
 user_purchase_association = Table('user_purchase', Base.metadata,
     Column('user_id', Integer, ForeignKey('users.id',ondelete="SET NULL")),
