@@ -66,7 +66,7 @@ class Product(Base):
     carts = relationship("Cart", back_populates="product", cascade="all, delete-orphan")
     favorites = relationship("Favorite", back_populates="product", cascade="all, delete-orphan")
     purchases = relationship("UserPurchase", back_populates="product")  # Added this line
-
+    # purchases = relationship("User", secondary="user_purchases", back_populates="purchases")  # Uncommented this line    
 
 class Sales(Base):
     __tablename__ = 'sales'
@@ -131,12 +131,12 @@ class UserPurchase(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete="SET NULL"))
     product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL"))
-    status = Column(String, default='pending') # Add your desired data type
+    status = Column(String, default='pending')
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
     # Establishing relationships
     user = relationship("User", back_populates="purchases")
-    product = relationship("Product", back_populates="buyers")
+    product = relationship("Product", back_populates="purchases")
 
 
 # Association table for the many-to-many relationship between User and Product
