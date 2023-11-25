@@ -1,10 +1,11 @@
-from sqlalchemy import  Column, Integer, String, ForeignKey,Table
+from sqlalchemy import  Column, Integer, String, ForeignKey,Table, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from server.db.db import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -19,6 +20,7 @@ class User(Base):
     # Establishing relationships
     reviews = relationship("Review", back_populates="user")
     purchased_products = relationship("Product", secondary="user_purchase", back_populates="buyers")
+
 
 class ProductCategory(Base):
     __tablename__ = 'product_categories'
@@ -55,6 +57,15 @@ class Product(Base):
 
     images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
 
+class Sales(Base):
+    __tablename__ = 'sales'
+    id = Column(Integer, primary_key=True)
+    discount_percent = Column(Float)
+    sale_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    
+    # Establishing many-to-many relationship with Product
+    products = relationship("Product", secondary="product_sales", back_populates="sales")
+
 class ProductImage(Base):
     __tablename__ = 'product_images'
     id = Column(Integer, primary_key=True)
@@ -62,6 +73,7 @@ class ProductImage(Base):
     product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL"), nullable=True)    
     # Establishing relationship with Product
     product = relationship("Product", back_populates="images") 
+
 
 
 class Review(Base):
@@ -77,6 +89,7 @@ class Review(Base):
     product = relationship("Product", back_populates="reviews")
     user = relationship("User", back_populates="reviews")
 
+
 # Association table for the many-to-many relationship between User and Product
 user_purchase_association = Table('user_purchase', Base.metadata,
     Column('user_id', Integer, ForeignKey('users.id',ondelete="SET NULL")),
@@ -84,3 +97,13 @@ user_purchase_association = Table('user_purchase', Base.metadata,
 )
 
 
+# Association Table for Product and Sales (many-to-many relationship)
+product_sales_association = Table(
+    'product_sales',
+    Base.metadata,
+    Column('product_id', Integer, ForeignKey('products.id')),
+    Column('sales_id', Integer, ForeignKey('sales.id')),
+)
+
+# Connecting the many-to-many relationship
+Product.sales = relationship("Sales", secondary=product_sales_association, back_populates="products")
