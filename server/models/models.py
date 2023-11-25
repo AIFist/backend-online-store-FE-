@@ -13,6 +13,8 @@ class User(Base):
     username = Column(String)
     email = Column(String)
     password = Column(String)
+    billing_address = Column(String,nullable=True)
+    shipping_address = Column(String,nullable=True)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     
@@ -62,7 +64,7 @@ class Sales(Base):
     id = Column(Integer, primary_key=True)
     discount_percent = Column(Float)
     sale_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    
+ 
     # Establishing many-to-many relationship with Product
     products = relationship("Product", secondary="product_sales", back_populates="sales")
 
