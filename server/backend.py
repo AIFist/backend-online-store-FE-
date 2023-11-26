@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from server.routers import user_router, product_catogory_router, product_router
+from server.routers import user_router, product_catogory_router, product_router , reviews_routers
 
 
 app = FastAPI(title="Shopping center App Backend")
@@ -16,6 +16,8 @@ app.add_middleware(
 app.include_router(user_router.router)
 app.include_router(product_catogory_router.router)
 app.include_router(product_router.router)
+app.include_router(reviews_routers.router)
+
 # app.include_router(user_prompt_router.router)
 
 @app.get("/ping")
