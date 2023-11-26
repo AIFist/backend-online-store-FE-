@@ -4,13 +4,23 @@ from server.models.models1 import session
 from server.models.models import Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
-
+from sqlalchemy import select
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 
 
 async def create_product(product_data: product_schemas.ProductCreate = Body(...)):
+    """
+    Create a new product along with associated images.
+
+    Parameters:
+    - product_data: Pydantic model containing product details.
+
+    Returns:
+    - Created Product.
+    """
+    
     try:
     # Convert the Pydantic model to a SQLAlchemy model
         new_product = Product(**product_data.model_dump(exclude={"images"}))
@@ -37,11 +47,11 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(id: int,):
     """
-    Delete a product for product table by ID.
+    Delete a product by ID.
 
     Parameters:
-    - id: ID of the product  to be deleted.
-    - session: SQLAlchemy Session dependency.
+    - id: ID of the product to be deleted.
+    - db: SQLAlchemy Session dependency.
 
     Returns:
     - Response with 204 status code if successful.
@@ -69,12 +79,11 @@ async def delete_product(id: int,):
 @router.put("/{id}", status_code=status.HTTP_201_CREATED)
 async def update_product(id: int, product_update: product_schemas.ProductUpadte = Body(...)):
     """
-    Update a product  by ID.
+    Update a product by ID.
 
     Parameters:
-    - id: ID of the product  to be updated.
-    - prouctcat_update: ProductUpdate model from product_cat_schemas containing updated data.
-    - session: SQLAlchemy Session dependency.
+    - id: ID of the product to be updated.
+    - product_update: Pydantic model containing updated data.
 
     Returns:
     - Updated Product.
@@ -96,3 +105,53 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     finally:
             session.close()
     return Product_query.first()
+
+@router.get("/all")
+async def get_all_products():
+    """
+    Get all products with their images.
+
+    Parameters:
+    - db: SQLAlchemy Session dependency.
+
+    Returns:
+    - List of products with images.
+    """
+    # Use a join query to retrieve products with their images
+    query = (
+        select(Product, ProductImage)
+        .join(ProductImage)
+        .order_by(Product.id)
+    )
+    
+    results = session.execute(query).fetchall()
+
+    # Create a dictionary to store products with their images
+    products_with_images = {}
+
+    for product, image in results:
+        if product.id not in products_with_images:
+            products_with_images[product.id] = {
+                "id": product.id,
+                "product_name": product.product_name,
+                "description": product.description,
+                "price": product.price,
+                "stock_quantity": product.stock_quantity,
+                "product_size": product.product_size,
+                "SKU": product.SKU,
+                "target_audience": product.target_audience,
+                "product_color": product.product_color,
+                "created_at": product.created_at,
+                "category_id": product.category_id,
+                "images": [],
+            }
+        
+        if image is not None:
+            products_with_images[product.id]["images"].append({
+                "image_path": image.image_path,
+            })
+
+    # Convert the dictionary values to a list for response
+    result_list = list(products_with_images.values())
+    
+    return result_list
