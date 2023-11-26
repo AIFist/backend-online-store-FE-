@@ -155,3 +155,48 @@ async def get_all_products():
     result_list = list(products_with_images.values())
     
     return result_list
+
+@router.get("/{id}")
+async def get_one_product(id: int):
+    """
+    Get a single product with its images based on the provided product ID.
+
+    Parameters:
+    - id: Product ID obtained from the path parameter.
+
+    Returns:
+    - Product with images.
+    """
+    query = (
+        select(Product, ProductImage)
+        .join(ProductImage)
+        .filter(Product.id == id)
+        .order_by(Product.id)
+    )
+    result = session.execute(query).first()
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Product with ID {id} not found")
+
+    product, image = result
+    product_with_images = {
+        "id": product.id,
+        "product_name": product.product_name,
+        "description": product.description,
+        "price": product.price,
+        "stock_quantity": product.stock_quantity,
+        "product_size": product.product_size,
+        "SKU": product.SKU,
+        "target_audience": product.target_audience,
+        "product_color": product.product_color,
+        "created_at": product.created_at,
+        "category_id": product.category_id,
+        "images": [],
+    }
+
+    if image is not None:
+        product_with_images["images"].append({
+            "image_path": image.image_path,
+        })
+
+    return product_with_images
+    
