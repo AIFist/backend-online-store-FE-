@@ -15,3 +15,14 @@ class ProductCreate(BaseModel):
     product_color: str
     category_id: int
     images: List[ProductImageCreate]
+    
+class ProductUpadte(BaseModel):
+    product_name: str
+    description: str
+    price: int
+    stock_quantity: int
+    product_size: str
+    target_audience: str
+    SKU:str
+    product_color: str
+    category_id: int

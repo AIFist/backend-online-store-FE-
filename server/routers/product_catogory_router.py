@@ -21,10 +21,18 @@ async def create_product_category(product_category: product_cat_schemas.ProductC
     Returns:
     - Newly created ProductCategory.
     """
-    db_product_category = ProductCategory(**product_category.model_dump())
-    session.add(db_product_category)
-    session.commit()
-    session.refresh(db_product_category)
+    try:
+        db_product_category = ProductCategory(**product_category.model_dump())
+        session.add(db_product_category)
+        session.commit()
+        session.refresh(db_product_category)
+    
+    except SQLAlchemyError as e:
+            print(f"An error occurred: {e}")
+            session.rollback()  # Rollback the transaction
+
+    finally:
+            session.close()
     return db_product_category
 
 
@@ -41,14 +49,21 @@ async def delete_product_category(id: int,):
     Returns:
     - Response with 204 status code if successful.
     """
-    product_cat_query = session.query(ProductCategory).filter(ProductCategory.id == id)
-    product_cat = product_cat_query.first()
-    if product_cat is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Product Category with id {id} does not exist")
-    
-    product_cat_query.delete(synchronize_session=False)
-    session.commit()
+    try:
+        product_cat_query = session.query(ProductCategory).filter(ProductCategory.id == id)
+        product_cat = product_cat_query.first()
+        if product_cat is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product Category with id {id} does not exist")
+        
+        product_cat_query.delete(synchronize_session=False)
+        session.commit()
+    except SQLAlchemyError as e:
+            print(f"An error occurred: {e}")
+            session.rollback()  # Rollback the transaction
+
+    finally:
+            session.close()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -66,18 +81,24 @@ async def update_product_category(id: int, prouctcat_update: product_cat_schemas
     Returns:
     - Updated ProductCategory.
     """
-    
-    ProductCategory_query = session.query(ProductCategory).filter(ProductCategory.id == id)
-    ProductCategory1 = ProductCategory_query.first()
-    if ProductCategory1 is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"User with id {id} does not exist")
-    
-    # if parent_category_id does not provided then keep parent_category_id same
-    if prouctcat_update.parent_category_id is None:
-        prouctcat_update.parent_category_id = ProductCategory1.parent_category_id
-    ProductCategory_query.update(prouctcat_update.model_dump(), synchronize_session=False)
-    session.commit()
+    try: 
+        ProductCategory_query = session.query(ProductCategory).filter(ProductCategory.id == id)
+        ProductCategory1 = ProductCategory_query.first()
+        if ProductCategory1 is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product Category with id {id} does not exist")
+        
+        # if parent_category_id does not provided then keep parent_category_id same
+        if prouctcat_update.parent_category_id is None:
+            prouctcat_update.parent_category_id = ProductCategory1.parent_category_id
+        ProductCategory_query.update(prouctcat_update.model_dump(), synchronize_session=False)
+        session.commit()
+    except SQLAlchemyError as e:
+            print(f"An error occurred: {e}")
+            session.rollback()  # Rollback the transaction
+
+    finally:
+            session.close()
     return ProductCategory_query.first()
 
 
