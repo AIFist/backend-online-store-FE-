@@ -5,3 +5,6 @@ class CreateReview(BaseModel):
     user_id: int
     rating: int
     comment: str
+    
+class UpdateReview(CreateReview):
+    pass
