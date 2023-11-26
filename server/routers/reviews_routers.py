@@ -67,3 +67,42 @@ async def review_update(id:int, review_update: reviews_schemas.UpdateReview=Body
             session.close()
     
     return review_query.first()
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(id: int,):
+    """
+    Delete a Review by ID.
+
+    Parameters:
+    - id: ID of the product to be deleted.
+
+    Returns:
+    - Response with 204 status code if successful.
+    """
+    try:
+        product_query = session.query(Review).filter(Review.id == id)
+        product = product_query.first()
+        if product is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product Category with id {id} does not exist")
+        
+        product_query.delete(synchronize_session=False)
+        session.commit()
+    
+    except SQLAlchemyError as e:
+            print(f"An error occurred: {e}")
+            session.rollback()  # Rollback the transaction
+
+    finally:
+            session.close()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/{id}")
+def get_all_review_of_one_product(id:int):
+    review_query = session.query(Review).filter(Review.product_id== id)
+    review = review_query.all()
+    if not review :
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product  with id {id} does not have any review")
+        
+    return review
