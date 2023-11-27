@@ -1,4 +1,4 @@
-from sqlalchemy import  Column, Integer, String, ForeignKey,Table, Float
+from sqlalchemy import  Column, Integer, String, ForeignKey, Table, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from server.db.db import Base
@@ -48,7 +48,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True)
     product_name = Column(String)
     description = Column(String)
-    price = Column(Integer)
+    price = Column(Float)
     stock_quantity = Column(Integer)
     product_size = Column(String)
     SKU = Column(String)

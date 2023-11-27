@@ -9,79 +9,85 @@ router = APIRouter(prefix="/user", tags=["User CRUD"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_user(user_data:user_schemas.GetUser = Body(...)):
+async def create_user(user_data: user_schemas.GetUser = Body(...)):
     """
-    This endpoint to create user in the database 
+    Create a new user in the database.
 
     Args:
-        user_data (user_schemas.GetUser, optional): Username, email 
-        and passsward will be getting by this varible
-        
+        user_data (user_schemas.GetUser): The user data including username, email, and password.
 
     Returns:
-        User: It will return user's data that has beeing created
+        User: The created user data.
     """
-    
-    # hashing the passward 
+    # Hash the password
     hashed_password = hash_helper.hash(user_data.password)
     user_data.password = hashed_password
+
+    # Create a new User object
     user = User(**user_data.model_dump())
+
+    # Add the user to the session and commit the changes
     session.add(user)
     session.commit()
     session.refresh(user)
+
     return user
 
 @router.post('/login')
-async def login(user_credentials:user_schemas.AuthUser):
+async def login(user_credentials: user_schemas.AuthUser):
     """
-    This endpoint is for login user and user will provide email and passward
+    Endpoint for user login. User provides email and password.
 
     Args:
-        user_credentials (user_schemas.AuthUser): json of email and passward
+        user_credentials (user_schemas.AuthUser): JSON object containing email and password.
 
     Raises:
-        HTTPException:  when Invalid credentials  
-        HTTPException: when Invalid credentials 
+        HTTPException: When invalid credentials are provided.
 
     Returns:
-        _type_: _description_
+        dict: A dictionary with a "message" key indicating successful login.
     """
-    user = session.query(User).filter(
-        User.email == user_credentials.email).first()
+    # Query the user from the database based on the provided email
+    user = session.query(User).filter(User.email == user_credentials.email).first()
 
+    # Check if the user exists
     if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
+
+    # Verify the password using the hash_helper.verify() function
     if not hash_helper.verify(user_credentials.password, user.password):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Invalid credentials")
-    # access_token = oauth2.create_access_token(data={"user_id": user.id})
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
-    # return {"access_token": access_token, "token_type": "bearer"}
-    return {"message": "Welcame and Happy Shopping"}
+    # Return a dictionary with a "message" key indicating successful login
+    return {"message": "Welcome and Happy Shopping"}
 
 
-@router.put("/update/{id}",status_code=status.HTTP_201_CREATED,)
-async def update_user(id: int, user_update : user_schemas.UpdateUser=Body(...)):
+@router.put("/update/{id}", status_code=status.HTTP_201_CREATED)
+async def update_user(id: int, user_update: user_schemas.UpdateUser = Body(...)):
     """
-    This is for updating username and email
+    Update the username and email of a user.
 
     Args:
-        id (int): primary key of the user
-        user_update (user_schemas.UpdateUser, optional): this will take username 
-        and email as in json . Defaults to Body(...).
+        id (int): The primary key of the user.
+        user_update (user_schemas.UpdateUser, optional): The updated username and email in JSON format.
 
     Raises:
-        HTTPException: if user with given id do not exist then it will return 404
+        HTTPException: If a user with the given id does not exist, it returns a 404 status code.
 
     Returns:
-        json: updated users data
+        JSON: The updated user's data.
     """
+    # Query the user by id
     user_query = session.query(User).filter(User.id == id)
     user = user_query.first()
-    if user == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"User with id {id} does not exist")
+
+    # If user does not exist, raise an exception
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} does not exist")
+
+    # Update the user data
     user_query.update(user_update.model_dump(), synchronize_session=False)
     session.commit()
+
+    # Return the updated user's data
     return user_query.first()

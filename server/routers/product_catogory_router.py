@@ -16,90 +16,86 @@ async def create_product_category(product_category: product_cat_schemas.ProductC
 
     Parameters:
     - product_category: ProductCategoryCreate model from product_cat_schemas containing data for the new category.
-    - session: SQLAlchemy Session dependency.
 
     Returns:
     - Newly created ProductCategory.
     """
     try:
-        db_product_category = ProductCategory(**product_category.model_dump())
-        session.add(db_product_category)
+        new_product_category = ProductCategory(**product_category.model_dump())
+        session.add(new_product_category)
         session.commit()
-        session.refresh(db_product_category)
+        session.refresh(new_product_category)
     
     except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
 
     finally:
-            session.close()
-    return db_product_category
+        session.close()
+    
+    return new_product_category
 
 
 # Delete a product category
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product_category(id: int,):
+async def delete_product_category(id: int):
     """
-    Delete a product category by ID.
-
-    Parameters:
-    - id: ID of the product category to be deleted.
-    - session: SQLAlchemy Session dependency.
-
-    Returns:
-    - Response with 204 status code if successful.
+    Delete a product category by its ID.
     """
-    try:
-        product_cat_query = session.query(ProductCategory).filter(ProductCategory.id == id)
-        product_cat = product_cat_query.first()
-        if product_cat is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product Category with id {id} does not exist")
-        
-        product_cat_query.delete(synchronize_session=False)
-        session.commit()
-    except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
+    # Query the product category by ID
+    product_cat_query = session.query(ProductCategory).filter(ProductCategory.id == id)
+    product_cat = product_cat_query.first()
+    
+    # Check if the product category exists
+    if product_cat is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Product Category with id {id} does not exist")
 
-    finally:
-            session.close()
+    # Delete the product category
+    product_cat_query.delete(synchronize_session=False)
+    session.commit()
+
+    # Return a response with no content
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # Update a product category
 @router.put("/{id}", status_code=status.HTTP_201_CREATED)
-async def update_product_category(id: int, prouctcat_update: product_cat_schemas.ProductCategoryUpdate = Body(...)):
+async def update_product_category(id: int, productcat_update: product_cat_schemas.ProductCategoryUpdate = Body(...)):
     """
     Update a product category by ID.
 
     Parameters:
     - id: ID of the product category to be updated.
-    - prouctcat_update: ProductCategoryUpdate model from product_cat_schemas containing updated data.
-    - session: SQLAlchemy Session dependency.
+    - productcat_update: ProductCategoryUpdate model containing updated data.
 
     Returns:
     - Updated ProductCategory.
     """
     try: 
-        ProductCategory_query = session.query(ProductCategory).filter(ProductCategory.id == id)
-        ProductCategory1 = ProductCategory_query.first()
-        if ProductCategory1 is None:
+        # Retrieve the product category from the database
+        product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
+        
+        # Check if the product category exists
+        if not product_category:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Product Category with id {id} does not exist")
         
-        # if parent_category_id does not provided then keep parent_category_id same
-        if prouctcat_update.parent_category_id is None:
-            prouctcat_update.parent_category_id = ProductCategory1.parent_category_id
-        ProductCategory_query.update(prouctcat_update.model_dump(), synchronize_session=False)
+        # Update the parent category ID if it is not provided
+        if productcat_update.parent_category_id is None:
+            productcat_update.parent_category_id = product_category.parent_category_id
+        
+        # Update the product category in the database
+        session.query(ProductCategory).filter(ProductCategory.id == id).update(productcat_update.model_dump(), synchronize_session=False)
         session.commit()
     except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
-
+        print(f"An error occurred: {e}")
+        session.rollback()
     finally:
-            session.close()
-    return ProductCategory_query.first()
+        session.close()
+    
+    # Retrieve and return the updated product category
+    return session.query(ProductCategory).filter(ProductCategory.id == id).first()
 
 
 # Get all product categories with their IDs and names
@@ -107,9 +103,6 @@ async def update_product_category(id: int, prouctcat_update: product_cat_schemas
 async def get_product_category():
     """
     Get all product categories with their IDs and names.
-
-    Parameters:
-    - session: SQLAlchemy Session dependency.
 
     Returns:
     - List of tuples containing (category_id, category_name).
@@ -131,9 +124,9 @@ async def get_one_product_category(id: int):
     Returns:
     - ProductCategory with the specified ID.
     """
-    ProductCategory1 = session.query(ProductCategory).filter(ProductCategory.id == id).first()
-    if not ProductCategory1:
+    product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
+    if not product_category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Product Category with id {id} was not found")
         
-    return ProductCategory1
+    return product_category
