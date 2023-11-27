@@ -224,7 +224,7 @@ async def get_one_product(id: int):
     return product_with_images
     
 
-@router.get("getproducts/{numer}")
+@router.get("getproducts/{number}")
 async def get_product_up_to_given_number(number: int):
     """
     Get a list of products with their images based on the provided number of rows you want.
@@ -265,6 +265,65 @@ async def get_product_up_to_given_number(number: int):
     # Extract the results and create a list of products with images
     products_with_images = []
     for product, image in results:
+        product_with_images = {
+            "id": product.id,
+            "product_name": product.product_name,
+            "description": product.description,
+            "price": product.price,
+            "stock_quantity": product.stock_quantity,
+            "product_size": product.product_size,
+            "SKU": product.SKU,
+            "target_audience": product.target_audience,
+            "product_color": product.product_color,
+            "created_at": product.created_at,
+            "category_id": product.category_id,
+            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
+        }
+        products_with_images.append(product_with_images)
+
+    return products_with_images
+
+@router.get("getproductbyname/{product_name}/{number}")
+async def get_product_by_name(product_name: str, number: int):
+    """
+    Get a single product with its images based on the provided product name.
+
+    Parameters:
+    - id: Product ID obtained from the path parameter.
+
+    Returns:
+    - Product with images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])
+        .select_from(outerjoin(Product, ProductImage))
+        .scalar_subquery()
+    )
+    # Create a query to select the Product and ProductImage based on the provided product name
+    # Create the main query
+    query = (
+        select(Product, ProductImage)
+        .outerjoin(ProductImage)
+        .filter(Product.product_name == product_name)
+        .limit(number)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+    # Check if the number of rows in the table is less than the specified number
+    # Check if the number of rows in the table is less than the specified number
+    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
+        query = query.limit(count_subquery)  # Limit the main query by the count
+        
+    # Execute the query and get the results
+    result = session.execute(query).all()
+    # Execute the query and get the first result
+    # If no result is found, raise an HTTPException with a 404 status code
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Product with name {product_name} not found")
+    # Extract the Product and ProductImage from the result
+    products_with_images = []
+    for product, image in result:
         product_with_images = {
             "id": product.id,
             "product_name": product.product_name,
