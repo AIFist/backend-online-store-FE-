@@ -5,6 +5,7 @@ from server.models.models import Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
 from sqlalchemy import select
+from sqlalchemy import func, select, outerjoin
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
@@ -222,3 +223,62 @@ async def get_one_product(id: int):
     # Return the product_with_images dictionary
     return product_with_images
     
+
+@router.get("getproducts/{numer}")
+async def get_product_up_to_given_number(number: int):
+    """
+    Get a list of products with their images based on the provided number of rows you want.
+
+    Parameters:
+    - id: Product ID obtained from the path parameter.
+
+    Returns:
+    - List of products with images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])
+        .select_from(outerjoin(Product, ProductImage))
+        .scalar_subquery()
+    )
+
+    # Create the main query
+    query = (
+        select(Product, ProductImage)
+        .outerjoin(ProductImage)
+        .limit(number)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
+    # Check if the number of rows in the table is less than the specified number
+    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
+        query = query.limit(count_subquery)  # Limit the main query by the count
+
+    # Execute the query and get the results
+    results = session.execute(query).all()
+        
+    # If no result is found, raise an HTTPException with a 404 status code
+    if not results:
+        raise HTTPException(status_code=404, detail=f"No products found up to the given number {number}")
+
+    # Extract the results and create a list of products with images
+    products_with_images = []
+    for product, image in results:
+        product_with_images = {
+            "id": product.id,
+            "product_name": product.product_name,
+            "description": product.description,
+            "price": product.price,
+            "stock_quantity": product.stock_quantity,
+            "product_size": product.product_size,
+            "SKU": product.SKU,
+            "target_audience": product.target_audience,
+            "product_color": product.product_color,
+            "created_at": product.created_at,
+            "category_id": product.category_id,
+            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
+        }
+        products_with_images.append(product_with_images)
+
+    return products_with_images

@@ -48,7 +48,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True)
     product_name = Column(String)
     description = Column(String)
-    price = Column(Integer)
+    price = Column(Float)
     stock_quantity = Column(Integer)
     product_size = Column(String)
     SKU = Column(String)

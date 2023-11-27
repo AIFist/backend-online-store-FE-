@@ -10,7 +10,7 @@ from server.schemas import product_cat_schemas
 router = APIRouter(prefix="/product_cat", tags=["Product category CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_product_category(product_category: product_cat_schemas.ProductCategoryCreate = Body(...)) -> ProductCategory:
+async def create_product_category(product_category: product_cat_schemas.ProductCategoryCreate = Body(...)):
     """
     Create a new product category.
 
