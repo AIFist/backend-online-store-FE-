@@ -19,8 +19,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    pass
+    # Alter the datatype of the 'price' column from Integer to Float
+    op.alter_column('products', 'price', type_=sa.Float)
+
 
 
 def downgrade() -> None:
-    pass
+    # In case of rollback, revert the changes
+    op.alter_column('products', 'price', type_=sa.Integer)
+
