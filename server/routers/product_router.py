@@ -8,21 +8,19 @@ from sqlalchemy import select
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-
-
 async def create_product(product_data: product_schemas.ProductCreate = Body(...)):
     """
     Create a new product along with associated images.
-
+    
     Parameters:
     - product_data: Pydantic model containing product details.
-
+    
     Returns:
     - Created Product.
     """
     
     try:
-    # Convert the Pydantic model to a SQLAlchemy model
+        # Convert the Pydantic model to a SQLAlchemy model
         new_product = Product(**product_data.model_dump(exclude={"images"}))
 
         # Create product images and associate with the product
@@ -35,43 +33,49 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
         session.commit()
         session.refresh(new_product)
     except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
 
     finally:
-            session.close()  # 
+        session.close()
 
     return new_product
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(id: int,):
+async def delete_product(id: int):
     """
     Delete a product by ID.
 
     Parameters:
     - id: ID of the product to be deleted.
-    - db: SQLAlchemy Session dependency.
 
     Returns:
     - Response with 204 status code if successful.
     """
     try:
+        # Query the product with the given id
         product_query = session.query(Product).filter(Product.id == id)
         product = product_query.first()
+
+        # If product does not exist, raise 404 error
         if product is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product Category with id {id} does not exist")
-        
+                                detail=f"Product with id {id} does not exist")
+
+        # Delete the product
         product_query.delete(synchronize_session=False)
         session.commit()
     
     except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
 
     finally:
-            session.close()
+        # Close the session
+        session.close()
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -89,22 +93,28 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     - Updated Product.
     """
     try:
-        Product_query = session.query(Product).filter(Product.id == id)
-        db_product = Product_query.first()
+        # Retrieve the product from the database based on the provided ID
+        product_query = session.query(Product).filter(Product.id == id)
+        db_product = product_query.first()
         if db_product is None:
+            # If the product does not exist, raise an HTTP 404 error
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Product with id {id} does not exist")
-        
-        
-        Product_query.update(product_update.model_dump(), synchronize_session=False)
+
+        # Update the product with the new data
+        product_query.update(product_update.model_dump(), synchronize_session=False)
         session.commit()
     except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
+        # If an error occurs during the update, print the error and rollback the transaction
+        print(f"An error occurred: {e}")
+        session.rollback()
 
     finally:
-            session.close()
-    return Product_query.first()
+        # Close the database session
+        session.close()
+
+    # Return the updated product
+    return product_query.first()
 
 @router.get("/all")
 async def get_all_products():
@@ -124,13 +134,16 @@ async def get_all_products():
         .order_by(Product.id)
     )
     
+    # Execute the query and fetch all results
     results = session.execute(query).fetchall()
 
     # Create a dictionary to store products with their images
     products_with_images = {}
 
+    # Iterate through the results and populate the dictionary
     for product, image in results:
         if product.id not in products_with_images:
+            # Create a new dictionary for the product if it doesn't exist
             products_with_images[product.id] = {
                 "id": product.id,
                 "product_name": product.product_name,
@@ -147,6 +160,7 @@ async def get_all_products():
             }
         
         if image is not None:
+            # Append the image to the product's images list
             products_with_images[product.id]["images"].append({
                 "image_path": image.image_path,
             })
@@ -167,17 +181,23 @@ async def get_one_product(id: int):
     Returns:
     - Product with images.
     """
+    # Create a query to select the Product and ProductImage based on the provided ID
     query = (
         select(Product, ProductImage)
         .join(ProductImage)
         .filter(Product.id == id)
         .order_by(Product.id)
     )
+    # Execute the query and get the first result
     result = session.execute(query).first()
+    # If no result is found, raise an HTTPException with a 404 status code
     if result is None:
         raise HTTPException(status_code=404, detail=f"Product with ID {id} not found")
 
+    # Extract the Product and ProductImage from the result
     product, image = result
+
+    # Create a dictionary to store the product information
     product_with_images = {
         "id": product.id,
         "product_name": product.product_name,
@@ -193,10 +213,12 @@ async def get_one_product(id: int):
         "images": [],
     }
 
+    # If there is an image, add it to the product_with_images dictionary
     if image is not None:
         product_with_images["images"].append({
             "image_path": image.image_path,
         })
 
+    # Return the product_with_images dictionary
     return product_with_images
     
