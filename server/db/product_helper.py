@@ -37,6 +37,8 @@ def helper_for_get_request(session, query, count_subquery, number):
 
     return products_with_images
 
+
+
 def helper_for_get_one_product(session, id:int):
     # Create a query to select the Product and ProductImage based on the provided ID
     query = (
@@ -79,6 +81,8 @@ def helper_for_get_one_product(session, id:int):
     # Return the product_with_images dictionary
     return product_with_images
 
+
+
 def helper_update_product(session, id:int, product_update:product_schemas.ProductUpadte):
     try:
         # Retrieve the product from the database based on the provided ID
@@ -103,6 +107,8 @@ def helper_update_product(session, id:int, product_update:product_schemas.Produc
 
     # Return the updated product
     return product_query.first()
+
+
 
 def helper_for_deleting_product(session, id:int):
     try:
@@ -129,3 +135,27 @@ def helper_for_deleting_product(session, id:int):
         session.close()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def helper_create_product(session, product_data: product_schemas.ProductCreate):
+    try:
+        # Convert the Pydantic model to a SQLAlchemy model
+        new_product = Product(**product_data.model_dump(exclude={"images"}))
+
+        # Create product images and associate with the product
+        for image_data in product_data.images:
+            image = ProductImage(**image_data.model_dump())
+            new_product.images.append(image)
+
+        # Add the product to the session and commit
+        session.add(new_product)
+        session.commit()
+        session.refresh(new_product)
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        session.close()
+
+    return new_product
