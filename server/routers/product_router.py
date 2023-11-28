@@ -2,7 +2,6 @@ from fastapi import Body, status,HTTPException, Response
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.models.models import Product, ProductImage
-from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
 from sqlalchemy import select
 from sqlalchemy import func, select, outerjoin
@@ -76,10 +75,10 @@ async def get_one_product(id: int):
 @router.get("getproducts/{number}")
 async def get_product_up_to_given_number(number: int):
     """
-    Get a list of products with their images based on the provided number of rows you want.
+    Get a list of products with their images up to the specified number.
 
     Parameters:
-    - id: Product ID obtained from the path parameter.
+    - number: The maximum number of rows to retrieve.
 
     Returns:
     - List of products with images.
@@ -106,13 +105,14 @@ async def get_product_up_to_given_number(number: int):
 @router.get("getbyname/{product_name}/{number}")
 async def get_product_by_name(product_name: str, number: int):
     """
-    Get a multiple product with its images based on the provided product name.
+    Get multiple products with their images based on the provided product name.
 
-    Parameters:
-    - id: Product ID obtained from the path parameter.
+    Args:
+    - product_name (str): The name of the product.
+    - number (int): The number of products to retrieve.
 
     Returns:
-    - Product with images.
+        dict: A dictionary containing the products and their images.
     """
     # Create a subquery to count the rows
     count_subquery = (
@@ -120,8 +120,8 @@ async def get_product_by_name(product_name: str, number: int):
         .select_from(outerjoin(Product, ProductImage))
         .scalar_subquery()
     )
+    
     # Create a query to select the Product and ProductImage based on the provided product name
-    # Create the main query
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)
@@ -130,20 +130,24 @@ async def get_product_by_name(product_name: str, number: int):
         .order_by(Product.id)
         .distinct(Product.id)
     )
+    
+    # Get the data using the helper function
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    
     return data
 
 
 @router.get("getbycategory/{category_id}/{number}")
 async def get_product_by_name(category_id: int, number: int):
     """
-    Get a multiple product with its images based on the provided product category.
+    Get multiple products with their images based on the provided category ID.
 
     Parameters:
-    - id: Product ID obtained from the path parameter.
+    - category_id: The ID of the category.
+    - number: The number of products to retrieve.
 
     Returns:
-    - Product with images.
+    - A list of products with their images.
     """
     # Create a subquery to count the rows
     count_subquery = (
@@ -168,13 +172,15 @@ async def get_product_by_name(category_id: int, number: int):
 @router.get("getbycategory_keyword/{category_id}/{search_keyword}/{number}")
 async def get_product_by_name(category_id: int, search_keyword: str, number: int):
     """
-    Get a multiple product with its images based on the provided product category.
+    Get a multiple product with its images based on the provided product category and search keyword.
 
     Parameters:
-    - id: Product ID obtained from the path parameter.
+    - category_id: The ID of the product category.
+    - search_keyword: The search keyword to filter the products.
+    - number: The maximum number of products to return.
 
     Returns:
-    - Product with images.
+    - A list of products with their images.
     """
     # Create a subquery to count the rows
     count_subquery = (
@@ -182,8 +188,8 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
         .select_from(outerjoin(Product, ProductImage))
         .scalar_subquery()
     )
-    # Create a query to select the Product and ProductImage based on the provided product name
-    # Create the main query
+
+    # Create a query to select the Product and ProductImage based on the provided category ID and search keyword
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)
@@ -193,5 +199,8 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
         .order_by(Product.id)
         .distinct(Product.id)
     )
+
+    # Call the helper function to execute the query and return the result
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
     return data
+

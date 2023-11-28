@@ -68,8 +68,8 @@ async def update_user(id: int, user_update: user_schemas.UpdateUser = Body(...))
     Update the username and email of a user.
 
     Args:
-        id (int): The primary key of the user.
-        user_update (user_schemas.UpdateUser, optional): The updated username and email in JSON format.
+    - id (int): The primary key of the user.
+    - user_update (user_schemas.UpdateUser, optional): The updated username and email in JSON format.
 
     Raises:
         HTTPException: If a user with the given id does not exist, it returns a 404 status code.

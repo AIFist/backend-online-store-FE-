@@ -91,11 +91,30 @@ async def delete_product(id: int,):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/{id}")
-def get_all_review_of_one_product(id:int):
-    review_query = session.query(Review).filter(Review.product_id== id)
-    review = review_query.all()
-    if not review :
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product  with id {id} does not have any review")
+def get_all_review_of_one_product(id: int):
+    """
+    Get all reviews of a product based on its ID.
+
+    Args:
+        id (int): The ID of the product.
+
+    Returns:
+        List[Review]: A list of reviews for the product.
+
+    Raises:
+        HTTPException: If the product does not have any review.
+    """
+    # Query the database for reviews of the given product ID
+    review_query = session.query(Review).filter(Review.product_id == id)
+    
+    # Get all the reviews
+    reviews = review_query.all()
+    
+    # If there are no reviews, raise an HTTPException with a 404 status code
+    if not reviews:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with id {id} does not have any review"
+        )
         
-    return review
+    return reviews
