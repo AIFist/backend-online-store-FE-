@@ -1,7 +1,9 @@
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy import func, select, select
 from server.models.models import Product, ProductImage
+from sqlalchemy.exc import SQLAlchemyError
+from server.schemas import product_schemas
 
 
 def helper_for_get_request(session, query, count_subquery, number):
@@ -77,4 +79,28 @@ def helper_for_get_one_product(session, id:int):
     
     # Return the product_with_images dictionary
     return product_with_images
-    
+
+def helper_update_product(session, id:int, product_update:product_schemas.ProductUpadte):
+    try:
+        # Retrieve the product from the database based on the provided ID
+        product_query = session.query(Product).filter(Product.id == id)
+        db_product = product_query.first()
+        if db_product is None:
+            # If the product does not exist, raise an HTTP 404 error
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {id} does not exist")
+
+        # Update the product with the new data
+        product_query.update(product_update.model_dump(), synchronize_session=False)
+        session.commit()
+    except SQLAlchemyError as e:
+        # If an error occurs during the update, print the error and rollback the transaction
+        print(f"An error occurred: {e}")
+        session.rollback()
+
+    finally:
+        # Close the database session
+        session.close()
+
+    # Return the updated product
+    return product_query.first()

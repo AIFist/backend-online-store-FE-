@@ -94,29 +94,8 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     Returns:
     - Updated Product.
     """
-    try:
-        # Retrieve the product from the database based on the provided ID
-        product_query = session.query(Product).filter(Product.id == id)
-        db_product = product_query.first()
-        if db_product is None:
-            # If the product does not exist, raise an HTTP 404 error
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product with id {id} does not exist")
-
-        # Update the product with the new data
-        product_query.update(product_update.model_dump(), synchronize_session=False)
-        session.commit()
-    except SQLAlchemyError as e:
-        # If an error occurs during the update, print the error and rollback the transaction
-        print(f"An error occurred: {e}")
-        session.rollback()
-
-    finally:
-        # Close the database session
-        session.close()
-
-    # Return the updated product
-    return product_query.first()
+    updated_product = product_helper.helper_update_product(session=session, id=id, product_update=product_update)
+    return updated_product
 
 
 @router.get("/{id}")
