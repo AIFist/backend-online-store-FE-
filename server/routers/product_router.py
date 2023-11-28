@@ -2,11 +2,12 @@ from fastapi import Body, status,HTTPException, Response
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.models.models import Product, ProductImage
-from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
 from sqlalchemy import select
 from sqlalchemy import func, select, outerjoin
+from server.db import product_helper
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
+
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_product(product_data: product_schemas.ProductCreate = Body(...)):
@@ -20,27 +21,8 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
     - Created Product.
     """
     
-    try:
-        # Convert the Pydantic model to a SQLAlchemy model
-        new_product = Product(**product_data.model_dump(exclude={"images"}))
-
-        # Create product images and associate with the product
-        for image_data in product_data.images:
-            image = ProductImage(**image_data.model_dump())
-            new_product.images.append(image)
-
-        # Add the product to the session and commit
-        session.add(new_product)
-        session.commit()
-        session.refresh(new_product)
-    except SQLAlchemyError as e:
-        print(f"An error occurred: {e}")
-        session.rollback()  # Rollback the transaction
-
-    finally:
-        session.close()
-
-    return new_product
+    data = product_helper.helper_create_product(session=session, product_data=product_data)
+    return data
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -54,30 +36,8 @@ async def delete_product(id: int):
     Returns:
     - Response with 204 status code if successful.
     """
-    try:
-        # Query the product with the given id
-        product_query = session.query(Product).filter(Product.id == id)
-        product = product_query.first()
-
-        # If product does not exist, raise 404 error
-        if product is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product with id {id} does not exist")
-
-        # Delete the product
-        product_query.delete(synchronize_session=False)
-        session.commit()
-    
-    except SQLAlchemyError as e:
-        # Handle any SQLAlchemy errors
-        print(f"An error occurred: {e}")
-        session.rollback()  # Rollback the transaction
-
-    finally:
-        # Close the session
-        session.close()
-
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    res = product_helper.helper_for_deleting_product(session=session, id=id)
+    return res
 
 
 # Update a product 
@@ -93,83 +53,9 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     Returns:
     - Updated Product.
     """
-    try:
-        # Retrieve the product from the database based on the provided ID
-        product_query = session.query(Product).filter(Product.id == id)
-        db_product = product_query.first()
-        if db_product is None:
-            # If the product does not exist, raise an HTTP 404 error
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product with id {id} does not exist")
+    updated_product = product_helper.helper_update_product(session=session, id=id, product_update=product_update)
+    return updated_product
 
-        # Update the product with the new data
-        product_query.update(product_update.model_dump(), synchronize_session=False)
-        session.commit()
-    except SQLAlchemyError as e:
-        # If an error occurs during the update, print the error and rollback the transaction
-        print(f"An error occurred: {e}")
-        session.rollback()
-
-    finally:
-        # Close the database session
-        session.close()
-
-    # Return the updated product
-    return product_query.first()
-
-@router.get("/all")
-async def get_all_products():
-    """
-    Get all products with their images.
-
-    Parameters:
-    - db: SQLAlchemy Session dependency.
-
-    Returns:
-    - List of products with images.
-    """
-    # Use a join query to retrieve products with their images
-    query = (
-        select(Product, ProductImage)
-        .join(ProductImage)
-        .order_by(Product.id)
-    )
-    
-    # Execute the query and fetch all results
-    results = session.execute(query).fetchall()
-
-    # Create a dictionary to store products with their images
-    products_with_images = {}
-
-    # Iterate through the results and populate the dictionary
-    for product, image in results:
-        if product.id not in products_with_images:
-            # Create a new dictionary for the product if it doesn't exist
-            products_with_images[product.id] = {
-                "id": product.id,
-                "product_name": product.product_name,
-                "description": product.description,
-                "price": product.price,
-                "stock_quantity": product.stock_quantity,
-                "product_size": product.product_size,
-                "SKU": product.SKU,
-                "target_audience": product.target_audience,
-                "product_color": product.product_color,
-                "created_at": product.created_at,
-                "category_id": product.category_id,
-                "images": [],
-            }
-        
-        if image is not None:
-            # Append the image to the product's images list
-            products_with_images[product.id]["images"].append({
-                "image_path": image.image_path,
-            })
-
-    # Convert the dictionary values to a list for response
-    result_list = list(products_with_images.values())
-    
-    return result_list
 
 @router.get("/{id}")
 async def get_one_product(id: int):
@@ -182,55 +68,18 @@ async def get_one_product(id: int):
     Returns:
     - Product with images.
     """
-    # Create a query to select the Product and ProductImage based on the provided ID
-    query = (
-        select(Product, ProductImage)
-        .join(ProductImage)
-        .filter(Product.id == id)
-        .order_by(Product.id)
-    )
-    # Execute the query and get the first result
-    result = session.execute(query).first()
-    # If no result is found, raise an HTTPException with a 404 status code
-    if result is None:
-        raise HTTPException(status_code=404, detail=f"Product with ID {id} not found")
-
-    # Extract the Product and ProductImage from the result
-    product, image = result
-
-    # Create a dictionary to store the product information
-    product_with_images = {
-        "id": product.id,
-        "product_name": product.product_name,
-        "description": product.description,
-        "price": product.price,
-        "stock_quantity": product.stock_quantity,
-        "product_size": product.product_size,
-        "SKU": product.SKU,
-        "target_audience": product.target_audience,
-        "product_color": product.product_color,
-        "created_at": product.created_at,
-        "category_id": product.category_id,
-        "images": [],
-    }
-
-    # If there is an image, add it to the product_with_images dictionary
-    if image is not None:
-        product_with_images["images"].append({
-            "image_path": image.image_path,
-        })
-
-    # Return the product_with_images dictionary
-    return product_with_images
+    # Get the product with the given id but image it gets one image at a time and this issue needs to be fixed
+    data = product_helper.helper_for_get_one_product(session= session, id=id)
+    return data
     
 
 @router.get("getproducts/{number}")
 async def get_product_up_to_given_number(number: int):
     """
-    Get a list of products with their images based on the provided number of rows you want.
+    Get a list of products with their images up to the specified number.
 
     Parameters:
-    - id: Product ID obtained from the path parameter.
+    - number: The maximum number of rows to retrieve.
 
     Returns:
     - List of products with images.
@@ -251,48 +100,55 @@ async def get_product_up_to_given_number(number: int):
         .distinct(Product.id)
     )
 
-    # Check if the number of rows in the table is less than the specified number
-    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
-        query = query.limit(count_subquery)  # Limit the main query by the count
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
 
-    # Execute the query and get the results
-    results = session.execute(query).all()
-        
-    # If no result is found, raise an HTTPException with a 404 status code
-    if not results:
-        raise HTTPException(status_code=404, detail=f"No products found up to the given number {number}")
-
-    # Extract the results and create a list of products with images
-    products_with_images = []
-    for product, image in results:
-        product_with_images = {
-            "id": product.id,
-            "product_name": product.product_name,
-            "description": product.description,
-            "price": product.price,
-            "stock_quantity": product.stock_quantity,
-            "product_size": product.product_size,
-            "SKU": product.SKU,
-            "target_audience": product.target_audience,
-            "product_color": product.product_color,
-            "created_at": product.created_at,
-            "category_id": product.category_id,
-            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
-        }
-        products_with_images.append(product_with_images)
-
-    return products_with_images
-
-@router.get("getproductbyname/{product_name}/{number}")
+@router.get("getbyname/{product_name}/{number}")
 async def get_product_by_name(product_name: str, number: int):
     """
-    Get a single product with its images based on the provided product name.
+    Get multiple products with their images based on the provided product name.
 
-    Parameters:
-    - id: Product ID obtained from the path parameter.
+    Args:
+    - product_name (str): The name of the product.
+    - number (int): The number of products to retrieve.
 
     Returns:
-    - Product with images.
+        dict: A dictionary containing the products and their images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])
+        .select_from(outerjoin(Product, ProductImage))
+        .scalar_subquery()
+    )
+    
+    # Create a query to select the Product and ProductImage based on the provided product name
+    query = (
+        select(Product, ProductImage)
+        .outerjoin(ProductImage)
+        .filter(Product.product_name == product_name)
+        .limit(number)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+    
+    # Get the data using the helper function
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    
+    return data
+
+
+@router.get("getbycategory/{category_id}/{number}")
+async def get_product_by_name(category_id: int, number: int):
+    """
+    Get multiple products with their images based on the provided category ID.
+
+    Parameters:
+    - category_id: The ID of the category.
+    - number: The number of products to retrieve.
+
+    Returns:
+    - A list of products with their images.
     """
     # Create a subquery to count the rows
     count_subquery = (
@@ -305,39 +161,80 @@ async def get_product_by_name(product_name: str, number: int):
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)
-        .filter(Product.product_name == product_name)
+        .filter(Product.category_id == category_id)
         .limit(number)
         .order_by(Product.id)
         .distinct(Product.id)
     )
-    # Check if the number of rows in the table is less than the specified number
-    # Check if the number of rows in the table is less than the specified number
-    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
-        query = query.limit(count_subquery)  # Limit the main query by the count
-        
-    # Execute the query and get the results
-    result = session.execute(query).all()
-    # Execute the query and get the first result
-    # If no result is found, raise an HTTPException with a 404 status code
-    if result is None:
-        raise HTTPException(status_code=404, detail=f"Product with name {product_name} not found")
-    # Extract the Product and ProductImage from the result
-    products_with_images = []
-    for product, image in result:
-        product_with_images = {
-            "id": product.id,
-            "product_name": product.product_name,
-            "description": product.description,
-            "price": product.price,
-            "stock_quantity": product.stock_quantity,
-            "product_size": product.product_size,
-            "SKU": product.SKU,
-            "target_audience": product.target_audience,
-            "product_color": product.product_color,
-            "created_at": product.created_at,
-            "category_id": product.category_id,
-            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
-        }
-        products_with_images.append(product_with_images)
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
 
-    return products_with_images
+
+@router.get("getbycategory_keyword/{category_id}/{search_keyword}/{number}")
+async def get_product_by_name(category_id: int, search_keyword: str, number: int):
+    """
+    Get a multiple product with its images based on the provided product category and search keyword.
+
+    Parameters:
+    - category_id: The ID of the product category.
+    - search_keyword: The search keyword to filter the products.
+    - number: The maximum number of products to return.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])
+        .select_from(outerjoin(Product, ProductImage))
+        .scalar_subquery()
+    )
+
+    # Create a query to select the Product and ProductImage based on the provided category ID and search keyword
+    query = (
+        select(Product, ProductImage)
+        .outerjoin(ProductImage)
+        .filter(Product.category_id == category_id)
+        .filter(Product.product_name.contains(search_keyword))
+        .limit(number)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
+    # Call the helper function to execute the query and return the result
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
+
+
+@router.get("searchbyproductsize/{product_size}/{number}")
+def get_product_by_size(product_size: str, number: int):
+    """
+    Get multiple products with their images based on the provided product size.
+
+    Parameters:
+    - product_size: The size of the product.
+    - number: The maximum number of products to fetch.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])  # Count the number of rows
+        .select_from(outerjoin(Product, ProductImage))  # Outer join Product and ProductImage tables
+        .scalar_subquery()  # Get the count as a subquery
+    )
+
+    # Create a query to select the Product and ProductImage based on the provided product size
+    query = (
+        select(Product, ProductImage)  # Select both Product and ProductImage
+        .outerjoin(ProductImage)  # Outer join Product and ProductImage tables
+        .filter(Product.product_size.contains(product_size))  # Filter by product size has give product size keyword
+        .limit(number)  # Limit the number of results
+        .order_by(Product.id)  # Order by Product ID
+        .distinct(Product.id)  # Remove duplicate Products
+    )
+
+    # Call the helper function to execute the query and return the result
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=10)
+    return data
