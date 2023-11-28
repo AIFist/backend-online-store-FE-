@@ -8,6 +8,7 @@ from sqlalchemy import func, select, outerjoin
 from server.db import product_helper
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
+
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_product(product_data: product_schemas.ProductCreate = Body(...)):
     """
@@ -204,3 +205,36 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
     return data
 
+
+@router.get("searchbyproductsize/{product_size}/{number}")
+def get_product_by_size(product_size: str, number: int):
+    """
+    Get multiple products with their images based on the provided product size.
+
+    Parameters:
+    - product_size: The size of the product.
+    - number: The maximum number of products to fetch.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])  # Count the number of rows
+        .select_from(outerjoin(Product, ProductImage))  # Outer join Product and ProductImage tables
+        .scalar_subquery()  # Get the count as a subquery
+    )
+
+    # Create a query to select the Product and ProductImage based on the provided product size
+    query = (
+        select(Product, ProductImage)  # Select both Product and ProductImage
+        .outerjoin(ProductImage)  # Outer join Product and ProductImage tables
+        .filter(Product.product_size.contains(product_size))  # Filter by product size has give product size keyword
+        .limit(number)  # Limit the number of results
+        .order_by(Product.id)  # Order by Product ID
+        .distinct(Product.id)  # Remove duplicate Products
+    )
+
+    # Call the helper function to execute the query and return the result
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=10)
+    return data
