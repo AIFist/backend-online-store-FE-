@@ -126,7 +126,7 @@ async def get_product_by_name(product_name: str, number: int):
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)
-        .filter(Product.product_name == product_name)
+        .filter(Product.product_name.contains(product_name))
         .limit(number)
         .order_by(Product.id)
         .distinct(Product.id)
@@ -230,6 +230,43 @@ def get_product_by_size(product_size: str, number: int):
         select(Product, ProductImage)  # Select both Product and ProductImage
         .outerjoin(ProductImage)  # Outer join Product and ProductImage tables
         .filter(Product.product_size.contains(product_size))  # Filter by product size has give product size keyword
+        .limit(number)  # Limit the number of results
+        .order_by(Product.id)  # Order by Product ID
+        .distinct(Product.id)  # Remove duplicate Products
+    )
+
+    # Call the helper function to execute the query and return the result
+    data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=10)
+    return data
+
+@router.get("filterbyprice/{min_price}/{max_price}/{number}/{product_name}")
+def filter_by_price(min_price: float, max_price: float, number: int, product_name: str):
+    """
+    Get multiple products with their images based on the provided price range and product name.
+
+    Parameters:
+    - min_price: The minimum price of the product.
+    - max_price: The maximum price of the product.
+    - number: The maximum number of products to fetch.
+    - product_name: The name of the product.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Create a subquery to count the rows
+    count_subquery = (
+        select([func.count()])  # Count the number of rows
+        .select_from(outerjoin(Product, ProductImage))  # Outer join Product and ProductImage tables
+        .scalar_subquery()  # Get the count as a subquery
+    )
+
+    # Create a query to select the Product and ProductImage based on the provided price range and product name
+    query = (
+        select(Product, ProductImage)  # Select both Product and ProductImage
+        .outerjoin(ProductImage)  # Outer join Product and ProductImage tables
+        .filter(Product.product_name.contains(product_name))  # Filter by product name
+        .filter(Product.price >= min_price)  # Filter by minimum price
+        .filter(Product.price <= max_price)  # Filter by maximum price
         .limit(number)  # Limit the number of results
         .order_by(Product.id)  # Order by Product ID
         .distinct(Product.id)  # Remove duplicate Products
