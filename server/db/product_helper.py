@@ -1,5 +1,4 @@
-
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status,Response
 from sqlalchemy import func, select, select
 from server.models.models import Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
@@ -104,3 +103,29 @@ def helper_update_product(session, id:int, product_update:product_schemas.Produc
 
     # Return the updated product
     return product_query.first()
+
+def helper_for_deleting_product(session, id:int):
+    try:
+        # Query the product with the given id
+        product_query = session.query(Product).filter(Product.id == id)
+        product = product_query.first()
+
+        # If product does not exist, raise 404 error
+        if product is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {id} does not exist")
+
+        # Delete the product
+        product_query.delete(synchronize_session=False)
+        session.commit()
+    
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

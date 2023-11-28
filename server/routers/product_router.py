@@ -55,30 +55,8 @@ async def delete_product(id: int):
     Returns:
     - Response with 204 status code if successful.
     """
-    try:
-        # Query the product with the given id
-        product_query = session.query(Product).filter(Product.id == id)
-        product = product_query.first()
-
-        # If product does not exist, raise 404 error
-        if product is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product with id {id} does not exist")
-
-        # Delete the product
-        product_query.delete(synchronize_session=False)
-        session.commit()
-    
-    except SQLAlchemyError as e:
-        # Handle any SQLAlchemy errors
-        print(f"An error occurred: {e}")
-        session.rollback()  # Rollback the transaction
-
-    finally:
-        # Close the session
-        session.close()
-
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    res = product_helper.helper_for_deleting_product(session=session, id=id)
+    return res
 
 
 # Update a product 
