@@ -73,13 +73,14 @@ async def get_one_product(id: int):
     return data
     
 
-@router.get("getproducts/{number}")
-async def get_product_up_to_given_number(number: int):
+@router.get("getproducts/{number}/{startindex}")
+async def get_product_up_to_given_number(number: int, startindex: int):
     """
     Get a list of products with their images up to the specified number.
 
     Parameters:
     - number: The maximum number of rows to retrieve.
+    - startindex: The starting index of the rows to retrieve.
 
     Returns:
     - List of products with images.
@@ -95,57 +96,62 @@ async def get_product_up_to_given_number(number: int):
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)
+        .offset(startindex)
         .limit(number)
         .order_by(Product.id)
         .distinct(Product.id)
     )
 
+    # Get the data using the helper function
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
     return data
 
-@router.get("getbyname/{product_name}/{number}")
-async def get_product_by_name(product_name: str, number: int):
+@router.get("getbyname/{product_name}/{number}/{startindex}")
+async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product name.
 
     Args:
     - product_name (str): The name of the product.
     - number (int): The number of products to retrieve.
+    - startindex (int): The starting index for retrieving the products.
 
     Returns:
         dict: A dictionary containing the products and their images.
     """
     # Create a subquery to count the rows
     count_subquery = (
-        select([func.count()])
-        .select_from(outerjoin(Product, ProductImage))
-        .scalar_subquery()
+        select([func.count()])  # Count the number of rows
+        .select_from(outerjoin(Product, ProductImage))  # Outer join Product and ProductImage tables
+        .scalar_subquery()  # Get the count as a subquery
     )
-    
+
     # Create a query to select the Product and ProductImage based on the provided product name
     query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .filter(Product.product_name.contains(product_name))
-        .limit(number)
-        .order_by(Product.id)
-        .distinct(Product.id)
+        select(Product, ProductImage)  # Select both Product and ProductImage
+        .outerjoin(ProductImage)  # Outer join Product and ProductImage tables
+        .filter(Product.product_name.contains(product_name))  # Filter by product name
+        .offset(startindex)  # Set the starting index for retrieving the products
+        .limit(number)  # Limit the number of products to retrieve
+        .order_by(Product.id)  # Order the products by their ID
+        .distinct(Product.id)  # Remove duplicate Products
     )
-    
+
     # Get the data using the helper function
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
-    
+
     return data
 
 
-@router.get("getbycategory/{category_id}/{number}")
-async def get_product_by_name(category_id: int, number: int):
+@router.get("getbycategory/{category_id}/{number}/{startindex}")
+async def get_product_by_name(category_id: int, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided category ID.
 
     Parameters:
     - category_id: The ID of the category.
     - number: The number of products to retrieve.
+    - startindex: The starting index of the products to retrieve.
 
     Returns:
     - A list of products with their images.
@@ -156,29 +162,33 @@ async def get_product_by_name(category_id: int, number: int):
         .select_from(outerjoin(Product, ProductImage))
         .scalar_subquery()
     )
-    # Create a query to select the Product and ProductImage based on the provided product name
-    # Create the main query
+
+    # Create a query to select the Product and ProductImage based on the provided category ID
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)
         .filter(Product.category_id == category_id)
+        .offset(startindex)
         .limit(number)
         .order_by(Product.id)
         .distinct(Product.id)
     )
+
+    # Get the data using the helper function
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
     return data
 
 
-@router.get("getbycategory_keyword/{category_id}/{search_keyword}/{number}")
-async def get_product_by_name(category_id: int, search_keyword: str, number: int):
+@router.get("getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
+async def get_product_by_name(category_id: int, search_keyword: str, number: int, startindex: int):
     """
-    Get a multiple product with its images based on the provided product category and search keyword.
+    Get a list of products with their images based on the provided product category and search keyword.
 
     Parameters:
     - category_id: The ID of the product category.
     - search_keyword: The search keyword to filter the products.
     - number: The maximum number of products to return.
+    - startindex: The starting index for pagination.
 
     Returns:
     - A list of products with their images.
@@ -196,6 +206,7 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
         .outerjoin(ProductImage)
         .filter(Product.category_id == category_id)
         .filter(Product.product_name.contains(search_keyword))
+        .offset(startindex)
         .limit(number)
         .order_by(Product.id)
         .distinct(Product.id)
@@ -206,14 +217,15 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
     return data
 
 
-@router.get("searchbyproductsize/{product_size}/{number}")
-def get_product_by_size(product_size: str, number: int):
+@router.get("searchbyproductsize/{product_size}/{number}/{startindex}")
+def get_product_by_size(product_size: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product size.
 
     Parameters:
     - product_size: The size of the product.
     - number: The maximum number of products to fetch.
+    - startindex: The starting index of the products to fetch.
 
     Returns:
     - A list of products with their images.
@@ -230,6 +242,7 @@ def get_product_by_size(product_size: str, number: int):
         select(Product, ProductImage)  # Select both Product and ProductImage
         .outerjoin(ProductImage)  # Outer join Product and ProductImage tables
         .filter(Product.product_size.contains(product_size))  # Filter by product size has give product size keyword
+        .offset(startindex)
         .limit(number)  # Limit the number of results
         .order_by(Product.id)  # Order by Product ID
         .distinct(Product.id)  # Remove duplicate Products
@@ -239,8 +252,8 @@ def get_product_by_size(product_size: str, number: int):
     data = product_helper.helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=10)
     return data
 
-@router.get("filterbyprice/{min_price}/{max_price}/{number}/{product_name}")
-def filter_by_price(min_price: float, max_price: float, number: int, product_name: str):
+@router.get("filterbyprice/{min_price}/{max_price}/{number}/{product_name}/{startindex}")
+def filter_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """
     Get multiple products with their images based on the provided price range and product name.
 
@@ -249,6 +262,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     - max_price: The maximum price of the product.
     - number: The maximum number of products to fetch.
     - product_name: The name of the product.
+    - startindex: The starting index of the products to fetch.
 
     Returns:
     - A list of products with their images.
@@ -267,6 +281,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
         .filter(Product.product_name.contains(product_name))  # Filter by product name
         .filter(Product.price >= min_price)  # Filter by minimum price
         .filter(Product.price <= max_price)  # Filter by maximum price
+        .offset(startindex)
         .limit(number)  # Limit the number of results
         .order_by(Product.id)  # Order by Product ID
         .distinct(Product.id)  # Remove duplicate Products
