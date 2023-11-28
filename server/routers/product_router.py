@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
 from sqlalchemy import select
 from sqlalchemy import func, select, outerjoin
+from server.db.product_helper import helper_for_get_request
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
@@ -251,37 +252,8 @@ async def get_product_up_to_given_number(number: int):
         .distinct(Product.id)
     )
 
-    # Check if the number of rows in the table is less than the specified number
-    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
-        query = query.limit(count_subquery)  # Limit the main query by the count
-
-    # Execute the query and get the results
-    results = session.execute(query).all()
-        
-    # If no result is found, raise an HTTPException with a 404 status code
-    if not results:
-        raise HTTPException(status_code=404, detail=f"No products found up to the given number {number}")
-
-    # Extract the results and create a list of products with images
-    products_with_images = []
-    for product, image in results:
-        product_with_images = {
-            "id": product.id,
-            "product_name": product.product_name,
-            "description": product.description,
-            "price": product.price,
-            "stock_quantity": product.stock_quantity,
-            "product_size": product.product_size,
-            "SKU": product.SKU,
-            "target_audience": product.target_audience,
-            "product_color": product.product_color,
-            "created_at": product.created_at,
-            "category_id": product.category_id,
-            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
-        }
-        products_with_images.append(product_with_images)
-
-    return products_with_images
+    data = helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
 
 @router.get("getbyname/{product_name}/{number}")
 async def get_product_by_name(product_name: str, number: int):
@@ -310,36 +282,8 @@ async def get_product_by_name(product_name: str, number: int):
         .order_by(Product.id)
         .distinct(Product.id)
     )
-    # Check if the number of rows in the table is less than the specified number
-    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
-        query = query.limit(count_subquery)  # Limit the main query by the count
-        
-    # Execute the query and get the results
-    result = session.execute(query).all()
-    # Execute the query and get the first result
-    # If no result is found, raise an HTTPException with a 404 status code
-    if result is None:
-        raise HTTPException(status_code=404, detail=f"Product with name {product_name} not found")
-    # Extract the Product and ProductImage from the result
-    products_with_images = []
-    for product, image in result:
-        product_with_images = {
-            "id": product.id,
-            "product_name": product.product_name,
-            "description": product.description,
-            "price": product.price,
-            "stock_quantity": product.stock_quantity,
-            "product_size": product.product_size,
-            "SKU": product.SKU,
-            "target_audience": product.target_audience,
-            "product_color": product.product_color,
-            "created_at": product.created_at,
-            "category_id": product.category_id,
-            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
-        }
-        products_with_images.append(product_with_images)
-
-    return products_with_images
+    data = helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
 
 
 @router.get("getbycategory/{category_id}/{number}")
@@ -369,36 +313,9 @@ async def get_product_by_name(category_id: int, number: int):
         .order_by(Product.id)
         .distinct(Product.id)
     )
-    # Check if the number of rows in the table is less than the specified number
-    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
-        query = query.limit(count_subquery)  # Limit the main query by the count
-        
-    # Execute the query and get the results
-    result = session.execute(query).all()
-    # Execute the query and get the first result
-    # If no result is found, raise an HTTPException with a 404 status code
-    if result is None:
-        raise HTTPException(status_code=404, detail=f"Product with name {category_id} not found")
-    # Extract the Product and ProductImage from the result
-    products_with_images = []
-    for product, image in result:
-        product_with_images = {
-            "id": product.id,
-            "product_name": product.product_name,
-            "description": product.description,
-            "price": product.price,
-            "stock_quantity": product.stock_quantity,
-            "product_size": product.product_size,
-            "SKU": product.SKU,
-            "target_audience": product.target_audience,
-            "product_color": product.product_color,
-            "created_at": product.created_at,
-            "category_id": product.category_id,
-            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
-        }
-        products_with_images.append(product_with_images)
+    data = helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
 
-    return products_with_images
 
 @router.get("getbycategory_keyword/{category_id}/{search_keyword}/{number}")
 async def get_product_by_name(category_id: int, search_keyword: str, number: int):
@@ -428,33 +345,5 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
         .order_by(Product.id)
         .distinct(Product.id)
     )
-    # Check if the number of rows in the table is less than the specified number
-    if session.execute(select([func.count()]).select_from(query.alias())).scalar() < number:
-        query = query.limit(count_subquery)  # Limit the main query by the count
-        
-    # Execute the query and get the results
-    result = session.execute(query).all()
-    # Execute the query and get the first result
-    # If no result is found, raise an HTTPException with a 404 status code
-    if result is None:
-        raise HTTPException(status_code=404, detail=f"Product with name {category_id} not found")
-    # Extract the Product and ProductImage from the result
-    products_with_images = []
-    for product, image in result:
-        product_with_images = {
-            "id": product.id,
-            "product_name": product.product_name,
-            "description": product.description,
-            "price": product.price,
-            "stock_quantity": product.stock_quantity,
-            "product_size": product.product_size,
-            "SKU": product.SKU,
-            "target_audience": product.target_audience,
-            "product_color": product.product_color,
-            "created_at": product.created_at,
-            "category_id": product.category_id,
-            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
-        }
-        products_with_images.append(product_with_images)
-
-    return products_with_images
+    data = helper_for_get_request(session=session, query=query, count_subquery=count_subquery, number=number)
+    return data
