@@ -44,7 +44,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
 
 
 @router.get("/getbycategory/{category_id}/{number}/{startindex}")
-async def get_product_by_name(category_id: int, number: int, startindex: int):
+async def get_product_by_category(category_id: int, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided category ID.
 
@@ -64,7 +64,7 @@ async def get_product_by_name(category_id: int, number: int, startindex: int):
 
 
 @router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
-async def get_product_by_name(category_id: int, search_keyword: str, number: int, startindex: int):
+async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Get a list of products with their images based on the provided product category and search keyword.
 
