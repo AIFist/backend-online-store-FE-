@@ -26,8 +26,11 @@ async def create_review(product_data: reviews_schemas.CreateReview = Body(...)):
     except SQLAlchemyError as e:
         print(f"An error occurred: {e}")
         session.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably product with id {db_review.product_id} does not exist or user with id {db_review.user_id} does not exist.")
+
     finally:
         session.close()
+
     return db_review
 
 
@@ -89,6 +92,7 @@ async def delete_product(id: int,):
     finally:
             session.close()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 
 @router.get("/{id}")
 def get_all_review_of_one_product(id: int):
