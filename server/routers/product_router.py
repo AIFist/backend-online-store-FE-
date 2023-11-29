@@ -1,10 +1,7 @@
-from fastapi import Body, status,HTTPException, Response
+from fastapi import Body, status
 from fastapi.routing import APIRouter
 from server.models.models1 import session
-from server.models.models import Product, ProductImage
 from server.schemas import product_schemas
-from sqlalchemy import select
-from sqlalchemy import func, select, outerjoin
 from server.db import product_helper
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 

@@ -151,6 +151,8 @@ def helper_create_product(session, product_data: product_schemas.ProductCreate):
     except SQLAlchemyError as e:
         print(f"An error occurred: {e}")
         session.rollback()  # Rollback the transaction
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably  category with id {product_data.category_id}   .")
+
 
     finally:
         session.close()
