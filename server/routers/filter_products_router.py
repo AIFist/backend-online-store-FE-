@@ -1,11 +1,7 @@
-from fastapi import Body, status,HTTPException, Response
 from fastapi.routing import APIRouter
 from server.models.models1 import session
-from server.models.models import Product, ProductImage
-from server.schemas import product_schemas
-from sqlalchemy import select
-from sqlalchemy import func, select, outerjoin
 from server.db import filter_products_helper
+
 router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints"])
 
 @router.get("/getproducts/{number}/{startindex}")
@@ -21,30 +17,8 @@ async def get_product_up_to_given_number(number: int, startindex: int):
     - List of products with images.
     """
 
-
-    # Create the main query
-    query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .offset(startindex)
-        .limit(number)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
-
-    # Count the total number of rows
-    total_rows = session.execute(select([func.count()]).select_from(outerjoin(Product, ProductImage))).scalar()
-
-    # Check if the number of rows in the table is less than the specified number
-    if total_rows < number:
-        query = (
-            select(Product, ProductImage)
-            .outerjoin(ProductImage)
-            .offset(startindex)
-            .limit(total_rows)  # Limit the query to the total number of rows
-            .order_by(Product.id)
-            .distinct(Product.id)
-        )
+    query = filter_products_helper.get_products(session=session, number=number, startindex=startindex)
+    
     data = filter_products_helper.helper_for_filters(session=session, query=query)
     return data
 
@@ -63,25 +37,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     Returns:
         dict: A dictionary containing the products and their images.
     """
-    # Create a subquery to count the rows
-    # Count the total number of rows
-    total_rows = (
-        session.execute(
-            select([func.count()]).select_from(outerjoin(Product, ProductImage)).filter(
-                Product.product_name.contains(product_name)
-            )
-        )
-    ).scalar()
-    # Create the main query
-    query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .filter(Product.product_name.contains(product_name))
-        .offset(startindex)
-        .limit(number if total_rows >= number else total_rows)  # Limit the query appropriately
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
+    query = filter_products_helper.get_product_by_name(session=session, product_name=product_name, number=number, startindex=startindex)
 
     data = filter_products_helper.helper_for_filters(session=session, query=query)
     return data
@@ -101,31 +57,7 @@ async def get_product_by_name(category_id: int, number: int, startindex: int):
     - A list of products with their images.
     """
     # Create the main query
-    query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .filter(Product.category_id == category_id)
-        .offset(startindex)
-        .limit(number)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
-
-    # Count the total number of rows
-    total_rows = session.execute(select([func.count()]).select_from(outerjoin(Product, ProductImage))).scalar()
-
-    # Check if the number of rows in the table is less than the specified number
-    if total_rows < number:
-        query = (
-            select(Product, ProductImage)
-            .outerjoin(ProductImage)
-            .filter(Product.category_id == category_id)
-            .offset(startindex)
-            .limit(total_rows)  # Limit the query to the total number of rows
-            .order_by(Product.id)
-            .distinct(Product.id)
-        )
-
+    query = filter_products_helper.get_product_by_category(session=session, category_id=category_id, number=number, startindex=startindex)
     # Get the data using the helper function
     data = filter_products_helper.helper_for_filters(session=session, query=query)
     return data
@@ -146,32 +78,7 @@ async def get_product_by_name(category_id: int, search_keyword: str, number: int
     - A list of products with their images.
     """
     # Create the main query
-    query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .filter(Product.category_id == category_id)
-        .filter(Product.product_name.contains(search_keyword))
-        .offset(startindex)
-        .limit(number)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
-
-    # Count the total number of rows
-    total_rows = session.execute(select([func.count()]).select_from(outerjoin(Product, ProductImage))).scalar()
-
-    # Check if the number of rows in the table is less than the specified number
-    if total_rows < number:
-        query = (
-            select(Product, ProductImage)
-            .outerjoin(ProductImage)
-            .filter(Product.category_id == category_id)
-            .filter(Product.product_name.contains(search_keyword))
-            .offset(startindex)
-            .limit(total_rows)  # Limit the query to the total number of rows
-            .order_by(Product.id)
-            .distinct(Product.id)
-        )
+    query = filter_products_helper.get_product_by_category_keyword(session=session, category_id=category_id, search_keyword=search_keyword, number=number, startindex=startindex)
 
     # Get the data using the helper function
     data = filter_products_helper.helper_for_filters(session=session, query=query)
@@ -192,31 +99,7 @@ def get_product_by_size(product_size: str, number: int, startindex: int):
     - A list of products with their images.
     """
     # Call the helper function to execute the query and return the result
-    query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .filter(Product.product_size.contains(product_size)) 
-        .offset(startindex)
-        .limit(number)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
-
-    # Count the total number of rows
-    total_rows = session.execute(select([func.count()]).select_from(outerjoin(Product, ProductImage))).scalar()
-
-    # Check if the number of rows in the table is less than the specified number
-    if total_rows < number:
-        query = (
-            select(Product, ProductImage)
-            .outerjoin(ProductImage)
-            .filter(Product.product_size.contains(product_size)) 
-            .offset(startindex)
-            .limit(total_rows)  # Limit the query to the total number of rows
-            .order_by(Product.id)
-            .distinct(Product.id)
-        )
-
+    query = filter_products_helper.search_product_by_productsize(session=session, product_size=product_size, number=number, startindex=startindex)
     # Get the data using the helper function
     data = filter_products_helper.helper_for_filters(session=session, query=query)
     return data
@@ -238,36 +121,8 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     - A list of products with their images.
     """
     # Call the helper function to execute the query and return the result
-    query = (
-        select(Product, ProductImage)
-        .outerjoin(ProductImage)
-        .filter(Product.product_name.contains(product_name))  # Filter by product name
-        .filter(Product.price >= min_price)  # Filter by minimum price
-        .filter(Product.price <= max_price)
-        .offset(startindex)
-        .limit(number)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
-
-    # Count the total number of rows
-    total_rows = session.execute(select([func.count()]).select_from(outerjoin(Product, ProductImage))).scalar()
-
-    # Check if the number of rows in the table is less than the specified number
-    if total_rows < number:
-        query = (
-            select(Product, ProductImage)
-            .outerjoin(ProductImage)
-            .filter(Product.product_name.contains(product_name))  # Filter by product name
-            .filter(Product.price >= min_price)  # Filter by minimum price
-            .filter(Product.price <= max_price)
-            .offset(startindex)
-            .limit(total_rows)  # Limit the query to the total number of rows
-            .order_by(Product.id)
-            .distinct(Product.id)
-        )
+    query = filter_products_helper.filterbyprice(session=session, min_price=min_price, max_price=max_price, number=number, product_name=product_name, startindex=startindex)
 
     # Get the data using the helper function
     data = filter_products_helper.helper_for_filters(session=session, query=query)
     return data
-
