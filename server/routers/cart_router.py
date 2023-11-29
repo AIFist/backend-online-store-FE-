@@ -60,7 +60,16 @@ async def delete_product_cart(id: int):
     data = cart_router_db.delete_product_cart(session=session, id=id)
     return data
 
-@router.get("all")
-async def get_all_product_cart():
-    data = cart_router_db.get_all_product_cart(session=session)
+@router.get("{UserId}", status_code=status.HTTP_200_OK)
+async def get_all_product_cart(UserId: int):
+    """
+    Retrieve all product carts for a user.
+
+    Args:
+    - UserId: ID of the user for which to retrieve product carts.
+
+    Returns:
+    - A list of product carts for the specified user.
+    """
+    data = cart_router_db.get_all_product_cart(session=session, UserId=UserId)
     return data

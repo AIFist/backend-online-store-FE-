@@ -104,3 +104,23 @@ def delete_product_cart(session, id:int):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+def get_all_product_cart(session, UserId: int):
+    try:
+        # Query the carts with the given user_id
+        carts = session.query(Cart).filter(Cart.user_id == UserId).all()
+
+        # If no carts are found, you might want to handle it accordingly
+        if not carts:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"No products found for user with id {UserId}")
+
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return carts
