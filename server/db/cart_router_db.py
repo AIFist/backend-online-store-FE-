@@ -1,4 +1,4 @@
-from fastapi import status,HTTPException
+from fastapi import status,HTTPException, Response
 from server.models.models import Cart
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import cart_schemas
@@ -76,3 +76,31 @@ def update_product_cart(session, id: int, product_cart_update: cart_schemas.Prod
         session.close()
         
     return product_cart_query.first()
+
+
+def delete_product_cart(session, id:int):
+    try:
+        # Query the product with the given id
+        product_query = session.query(Cart).filter(Cart.id == id)
+        product = product_query.first()
+
+        # If product does not exist, raise 404 error
+        if product is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {id} does not exist")
+
+        # Delete the product
+        product_query.delete(synchronize_session=False)
+        session.commit()
+    
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+

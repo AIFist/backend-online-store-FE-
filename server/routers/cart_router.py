@@ -46,3 +46,21 @@ async def product_cart_update(id: int, product_cart_update: cart_schemas.Product
     return data
 
 
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_cart(id: int):
+    """
+    Delete a product cart by ID.
+
+    Args:
+    - id: ID of the product cart to be deleted.
+
+    Returns:
+    - The deleted product cart.
+    """
+    data = cart_router_db.delete_product_cart(session=session, id=id)
+    return data
+
+@router.get("all")
+async def get_all_product_cart():
+    data = cart_router_db.get_all_product_cart(session=session)
+    return data
