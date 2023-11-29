@@ -3,6 +3,7 @@ from sqlalchemy import func, select, select
 from server.models.models import Product, ProductImage
 from sqlalchemy import func, select, outerjoin
 
+
 def helper_for_filters(session, query):
     """
     Helper function to execute a query and return products with images
@@ -40,6 +41,7 @@ def helper_for_filters(session, query):
     ]
 
     return products_with_images
+
 
 def get_products(session, number: int, startindex: int):
     """
@@ -80,7 +82,18 @@ def get_products(session, number: int, startindex: int):
         
     return query
 
+
 def get_product_by_name(session, product_name:str, number: int, startindex: int):
+    """
+    Retrieve a list of products and their images by product name, with pagination.
+    Args:
+        session (Session): The SQLAlchemy session object.
+        product_name (str): The name of the product to search for.
+        number (int): The number of products to retrieve.
+        startindex (int): The starting index for pagination.
+    Returns:
+        List[Tuple]: A list of tuples containing the products and their images.
+    """
     # Create the main query
     query = (
         select(Product, ProductImage)
@@ -109,7 +122,19 @@ def get_product_by_name(session, product_name:str, number: int, startindex: int)
 
     return query
 
+
 def get_product_by_category(session, category_id: int, number: int, startindex: int):
+    """
+    Get a list of products with their images based on the provided product category.
+    Args:
+        session: The database session object.
+        category_id: The ID of the product category.
+        number: The number of products to retrieve.
+        startindex: The starting index for pagination.
+    Returns:
+        List[Tuple]: A list of tuples containing the products and their images.
+    """
+    
     # Create the main query
     query = (
         select(Product, ProductImage)
@@ -138,7 +163,19 @@ def get_product_by_category(session, category_id: int, number: int, startindex: 
 
     return query
 
+
 def get_product_by_category_keyword(session, category_id: int, search_keyword: str, number: int, startindex: int):
+    """
+    Get products by category and search keyword.
+    Args:
+        session: The database session.
+        category_id: The ID of the category.
+        search_keyword: The keyword to search for in product names.
+        number: The number of products to retrieve.
+        startindex: The starting index for retrieving products.
+    Returns:
+        A query object that fetches products filtered by category and search keyword.
+    """
     # Create the main query
     query = (
         select(Product, ProductImage)
@@ -169,7 +206,18 @@ def get_product_by_category_keyword(session, category_id: int, search_keyword: s
 
     return query
 
+
 def search_product_by_productsize(session, product_size: str, number: int, startindex: int):
+    """
+    Search products by product size and return a query object.
+    Args:
+        session: The database session.
+        product_size: The size of the product to search for.
+        number: The number of products to retrieve.
+        startindex: The starting index for retrieving products.
+    Returns:
+        A query object that fetches products filtered by product size.
+    """
     # Call the helper function to execute the query and return the result
     query = (
         select(Product, ProductImage)
@@ -198,8 +246,22 @@ def search_product_by_productsize(session, product_size: str, number: int, start
 
     return query
 
-def filterbyprice(session, min_price: float, max_price: float, number: int, product_name: str, startindex: int):
-    # Call the helper function to execute the query and return the result
+
+def filter_product_by_price(session, min_price: float, max_price: float, number: int, product_name: str, startindex: int):
+    """
+    Filter products by price range and product name.
+    Args:
+        session: The database session.
+        min_price (float): The minimum price of the products.
+        max_price (float): The maximum price of the products.
+        number (int): The maximum number of products to retrieve.
+        product_name (str): The name of the product to filter by.
+        startindex (int): The starting index of the products to retrieve.
+    Returns:
+        Query: The SQLAlchemy query object for retrieving the filtered products.
+    """
+    # Construct the base query to filter products
+    
     query = (
         select(Product, ProductImage)
         .outerjoin(ProductImage)

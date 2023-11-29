@@ -121,7 +121,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     - A list of products with their images.
     """
     # Call the helper function to execute the query and return the result
-    query = filter_products_helper.filterbyprice(session=session, min_price=min_price, max_price=max_price, number=number, product_name=product_name, startindex=startindex)
+    query = filter_products_helper.filter_product_by_price(session=session, min_price=min_price, max_price=max_price, number=number, product_name=product_name, startindex=startindex)
 
     # Get the data using the helper function
     data = filter_products_helper.helper_for_filters(session=session, query=query)
