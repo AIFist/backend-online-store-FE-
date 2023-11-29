@@ -1,46 +1,48 @@
-from fastapi import Body, status,HTTPException, Response
+from fastapi import Body, status
 from fastapi.routing import APIRouter
 from server.models.models1 import session
-from server.models.models import Cart
-from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import cart_schemas
+from server.db import cart_router_db
 
 router = APIRouter(prefix="/productcart", tags=["Product Cart CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_product_cart(product_cart: cart_schemas.ProductCartCreate = Body(...)):
+async def create_product_cart(
+    product_cart: cart_schemas.ProductCartCreate = Body(...)
+):
     """
-    Create a new product in the cart.
+    Creates a new product cart.
 
     Args:
-    - product_cart: ProductCartCreate model containing data for the new product cart.
+        product_cart (cart_schemas.ProductCartCreate): The product cart data.
 
     Returns:
-    - The newly created product cart.
+        The created product cart data.
     """
-    try:
-        # Create a new ProductCart instance using the data from the product_cart model
-        new_product_cart = Cart(**product_cart.model_dump())
 
-        # Add the new_product_cart to the session
-        session.add(new_product_cart)
-
-        # Commit the changes to the database
-        session.commit()
-
-        # Refresh the new_product_cart with the latest data from the database
-        session.refresh(new_product_cart)
+    # Create the product cart in the database
+    data = cart_router_db.create_product_cart(
+        session=session, product_cart=product_cart
+    )
     
-    except SQLAlchemyError as e:
-        # Print the error message
-        print(f"An error occurred: {e}")
+    return data
+   
 
-        # Rollback the transaction
-        session.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably product with id {product_cart.product_id} does not exist or user with id {product_cart.user_id} does not exist.")
-    finally:
-        # Close the session
-        session.close()
-    
-    # Return the newly created product cart
-    return new_product_cart
+@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+async def product_cart_update(id: int, product_cart_update: cart_schemas.ProductCartUpdate = Body(...)):
+    """
+    Update a product cart by ID.
+
+    Args:
+    - id: ID of the product cart to be updated.
+    - product_cart_update: ProductCartUpdate model containing updated data for the product cart.
+
+    Returns:
+    - The updated product cart.
+    """
+    data = cart_router_db.update_product_cart(
+        session=session, id=id, product_cart_update=product_cart_update
+    )
+    return data
+
+
