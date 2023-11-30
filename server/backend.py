@@ -8,7 +8,8 @@ from server.routers import (
     filter_products_router, 
     cart_router,
     favorites_router,
-    user_paches_router
+    user_paches_router,
+    sales_schemas_router
 )
 
 app = FastAPI(title="Shopping center App Backend")
@@ -29,6 +30,7 @@ app.include_router(reviews_routers.router)
 app.include_router(cart_router.router)
 app.include_router(favorites_router.router)
 app.include_router(user_paches_router.router)
+app.include_router(sales_schemas_router.router)
 
 # app.include_router(user_prompt_router.router)
 
