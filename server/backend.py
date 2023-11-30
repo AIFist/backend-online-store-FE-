@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from server.routers import (
+    sales_router,
     user_router, 
     product_catogory_router, 
     product_router, 
@@ -9,7 +10,6 @@ from server.routers import (
     cart_router,
     favorites_router,
     user_paches_router,
-    sales_schemas_router
 )
 
 app = FastAPI(title="Shopping center App Backend")
@@ -30,7 +30,7 @@ app.include_router(reviews_routers.router)
 app.include_router(cart_router.router)
 app.include_router(favorites_router.router)
 app.include_router(user_paches_router.router)
-app.include_router(sales_schemas_router.router)
+app.include_router(sales_router.router)
 
 # app.include_router(user_prompt_router.router)
 
