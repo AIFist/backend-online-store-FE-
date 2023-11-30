@@ -4,7 +4,7 @@ from server.models.models1 import session
 from server.schemas import cart_schemas
 from server.db import cart_router_db
 
-router = APIRouter(prefix="/productcart", tags=["Product Cart CRUD"])
+router = APIRouter(prefix="/cart", tags=["Product Cart CRUD"])
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_product_cart(
@@ -72,4 +72,20 @@ async def get_all_product_cart(UserId: int):
     - A list of product carts for the specified user.
     """
     data = cart_router_db.get_all_product_cart(session=session, UserId=UserId)
+    return data
+
+@router.get("/allproduct/{UserId}")
+async def get_all_product_cart(UserId: int):
+    """
+    Get all products in the cart for a given user.
+
+    Args:
+        UserId (int): The ID of the user.
+
+    Returns:
+        data: The cart data for the user.
+    """
+    # Retrieve all products in the cart for the given user
+    data = cart_router_db.get_all_product_cart(session=session, UserId=UserId)
+    
     return data
