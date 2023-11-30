@@ -1,7 +1,9 @@
-from fastapi import status,HTTPException
+from fastapi import status,HTTPException, Response
 from server.schemas import favorites_schemas
-from server.models.models import Favorite
+from server.models.models import Favorite as Favorites
 from sqlalchemy.exc import SQLAlchemyError
+
+
 def helper_create_product_favorite(session, product_favorite: favorites_schemas.ProductFavoriteCreate):
     """
     Create a new product favorite.
@@ -15,7 +17,7 @@ def helper_create_product_favorite(session, product_favorite: favorites_schemas.
     """
     try:
         # Create a new ProductFavorite instance using the data from the product_favorite model
-        new_product_favorite = Favorite(**product_favorite.model_dump())
+        new_product_favorite = Favorites(**product_favorite.model_dump())
 
         # Add the new_product_favorite to the session
         session.add(new_product_favorite)
@@ -37,3 +39,42 @@ def helper_create_product_favorite(session, product_favorite: favorites_schemas.
         
     # Return the newly created product favorite
     return new_product_favorite
+
+
+def helper_delete_product_favorite(session, id: int):
+    """
+    Delete a product favorite by ID.
+
+    Args:
+    - session: SQLAlchemy session object
+    - id: ID of the product favorite to be deleted.
+
+    Returns:
+    - The deleted product favorite.
+    """
+    try:
+    # Declare Favorite variable before using it in the query
+
+        # Query the product with the given id
+        Favorite_product_query = session.query(Favorites).filter(Favorites.id == id)
+        Favorite = Favorite_product_query.first()
+
+        # If product does not exist, raise 404 error
+        if Favorite is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {id} does not exist")
+
+        # Delete the product
+        Favorite_product_query.delete(synchronize_session=False)
+        session.commit()
+
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

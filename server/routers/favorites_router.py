@@ -25,3 +25,17 @@ async def create_product_favorite(
         session=session, product_favorite=product_favorite
     )
     return data
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_favorite(id: int):
+    """
+    Delete a product favorite by ID.
+
+    Args:
+    - id: ID of the product favorite to be deleted.
+
+    Returns:
+    - The deleted product favorite.
+    """
+    data = favorites_helper.helper_delete_product_favorite(session=session, id=id)
+    return data
