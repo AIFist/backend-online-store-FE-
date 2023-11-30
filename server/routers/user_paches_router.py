@@ -56,3 +56,14 @@ async def delete_user_purchase(id: int):
     """
     data = user_purchases_helper.helper_delete_user_purchase(session=session, id=id)
     return data
+
+@router.get("/{UserId}")
+async def get_all_user_purchase(UserId: int):
+    """
+    Get all user purchases.
+
+    Returns:
+    - A list of user purchases.
+    """
+    data = user_purchases_helper.helper_get_all_user_purchases(session=session,UserId=UserId)
+    return data

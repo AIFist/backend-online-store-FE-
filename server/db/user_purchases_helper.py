@@ -1,5 +1,5 @@
 from fastapi import status,HTTPException, Response
-from server.models.models import UserPurchase
+from server.models.models import UserPurchase, Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 from server.schemas import user_purchases_schemas
@@ -123,3 +123,43 @@ def helper_delete_user_purchase(session, id: int):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+
+def helper_get_all_user_purchases(session, UserId:int):
+    """
+    Get all user purchases from the database.
+
+    Args:
+        session: The SQLAlchemy session object.
+
+    Returns:
+        A list of all user purchases.
+    """
+    try:
+        # Query the carts, join with the Product and ProductImage tables
+        userPurchase = (
+            session.query(UserPurchase)
+            .join(Product, UserPurchase.product_id == Product.id)
+            .outerjoin(ProductImage, ProductImage.product_id == Product.id)
+            .filter(UserPurchase.user_id == UserId)
+            .options(
+                joinedload(UserPurchase.product)  # Use joinedload to eagerly load the associated Product
+                .joinedload(Product.images)  # Use joinedload to eagerly load the associated ProductImage
+            )
+            .all()
+        )
+
+        # If no carts are found, you might want to handle it accordingly
+        if not userPurchase:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"No products found for user with id {UserId}")
+
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return userPurchase
