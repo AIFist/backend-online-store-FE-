@@ -1,7 +1,9 @@
 from fastapi import status,HTTPException, Response
 from server.schemas import favorites_schemas
 from server.models.models import Favorite as Favorites
+from server.models.models import Product, User , ProductImage
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 
 def helper_create_product_favorite(session, product_favorite: favorites_schemas.ProductFavoriteCreate):
@@ -78,3 +80,41 @@ def helper_delete_product_favorite(session, id: int):
         session.close()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def helper_get_all_product_favorite(session, UserId):
+    """
+    Get all product favorites.
+
+    Args:
+    - session: SQLAlchemy session object
+
+    Returns:
+    - A list of product favorites.
+    """
+    try:
+        fav = (
+            session.query(Favorites)
+            .join(Product, Favorites.product_id == Product.id)
+            .outerjoin(ProductImage, ProductImage.product_id == Product.id)
+            .filter(Favorites.user_id == UserId)
+            .options(
+                joinedload(Favorites.product)  # Use joinedload to eagerly load the associated Product
+                .joinedload(Product.images)  # Use joinedload to eagerly load the associated ProductImage
+            )
+            .all()
+        )
+        data = session.query(Favorites).filter(Favorites.user_id == UserId).all()
+        if data is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {UserId} does not exist")
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+    return data
+    

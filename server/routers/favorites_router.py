@@ -39,3 +39,14 @@ async def delete_product_favorite(id: int):
     """
     data = favorites_helper.helper_delete_product_favorite(session=session, id=id)
     return data
+
+@router.get("/{UserId}")
+async def get_all_product_favorite(UserId: int):
+    """
+    Get all product favorites.
+
+    Returns:
+    - A list of product favorites.
+    """
+    data = favorites_helper.helper_get_all_product_favorite(session=session,UserId=UserId)
+    return data
