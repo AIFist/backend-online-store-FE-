@@ -1,6 +1,4 @@
 from fastapi import status,HTTPException, Response
-from server.schemas import favorites_schemas
-from server.models.models import Favorite as Favorites
 from server.models.models import UserPurchase
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
@@ -43,3 +41,85 @@ def helper_create_user_purchase(session,user_purchase: user_purchases_schemas.Us
         session.rollback()
         
     return new_user_purchase
+
+def helper_update_user_purchase(session, id: int, user_purchase_update: user_purchases_schemas.UserPurchasesUpdate):
+    """
+    Update a user purchase record in the database with the given ID.
+
+    Args:
+        session: The SQLAlchemy session object.
+        id: The ID of the user purchase to update.
+        user_purchase_update: An instance of the UserPurchasesUpdate model containing the updated data.
+
+    Returns:
+        The updated user purchase record.
+
+    Raises:
+        HTTPException: If the user purchase with the given ID does not exist.
+    """
+    try:
+        # Query the user purchase with the given ID
+        user_purchase_query = session.query(UserPurchase).filter(UserPurchase.id == id)
+        user_purchase = user_purchase_query.first()
+
+        # If user purchase does not exist, raise 404 error
+        if user_purchase is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"User purchase with id {id} does not exist")
+
+        # Update the user purchase with the data from the user_purchase_update model
+        user_purchase_query.update(user_purchase_update.model_dump(), synchronize_session=False)
+        session.commit()
+    
+    except SQLAlchemyError as e:
+        # Print the error message
+        print(f"An error occurred: {e}")
+
+        # Rollback the transaction
+        session.rollback()
+    finally:
+        # Close the session
+        session.close()
+
+    return user_purchase_query.first()
+
+
+def helper_delete_user_purchase(session, id: int):
+    """
+    Delete a user purchase record from the database with the given ID.
+
+    Args:
+        session: The SQLAlchemy session object.
+        id: The ID of the user purchase to delete.
+
+    Returns:
+        The deleted user purchase record.
+
+    Raises:
+        HTTPException: If the user purchase with the given ID does not exist.
+    """
+    try:
+        # Query the user purchase with the given ID
+        user_purchase_query = session.query(UserPurchase).filter(UserPurchase.id == id)
+        user_purchase = user_purchase_query.first()
+
+        # If user purchase does not exist, raise 404 error
+        if user_purchase is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"User purchase with id {id} does not exist")
+
+        # Delete the user purchase
+        user_purchase_query.delete(synchronize_session=False)
+        session.commit()
+    except SQLAlchemyError as e:
+        # Print the error message
+        print(f"An error occurred: {e}")
+
+        # Rollback the transaction
+        session.rollback()
+    finally:
+        # Close the session
+        session.close()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+

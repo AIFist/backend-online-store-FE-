@@ -25,3 +25,34 @@ async def create_user_purchase(
         session=session, user_purchase=user_purchase
     )
     return data
+
+@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+async def user_purchase_update(id: int, user_purchase_update: user_purchases_schemas.UserPurchasesUpdate = Body(...)):
+    """
+    Update a user purchase by ID.
+
+    Args:
+    - id: ID of the user purchase to be updated.
+    - user_purchase_update: UserPurchasesUpdate model containing updated data for the user purchase.
+
+    Returns:
+    - The updated user purchase.
+    """
+    data = user_purchases_helper.helper_update_user_purchase(
+        session=session, id=id, user_purchase_update=user_purchase_update
+    )
+    return data
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_purchase(id: int):
+    """
+    Delete a user purchase by ID.
+
+    Args:
+    - id: ID of the user purchase to be deleted.
+
+    Returns:
+    - The deleted user purchase.
+    """
+    data = user_purchases_helper.helper_delete_user_purchase(session=session, id=id)
+    return data
