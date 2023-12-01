@@ -122,3 +122,8 @@ def get_all_review_of_one_product(id: int):
         )
         
     return reviews
+
+
+# TODO add review functions that send review with profduct
+def review_with_product():
+    pass
