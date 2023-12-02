@@ -126,3 +126,38 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
     )
 
     return query
+
+def filter_product_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
+    """
+    Filter products by price range and return a query object.
+    Args:
+        session: The database session.
+        min_price: The minimum price of the product to filter by.
+        max_price: The maximum price of the product to filter by.
+        number: The number of products to retrieve.
+        product_name: The name of the product to filter by.
+        startindex: The starting index for retrieving products.
+    Returns:
+        A query object that fetches products filtered by price range.
+    """
+    # Call the helper function to execute the query and return the result
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .filter(Product.price >= min_price)
+        .filter(Product.price <= max_price)
+        .filter(Product.product_name.contains(product_name))
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
+    return query
