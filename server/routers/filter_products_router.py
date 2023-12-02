@@ -65,26 +65,26 @@ router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints
 #     return data
 
 
-@router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
-async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
-    """
-    Get a list of products with their images based on the provided product category and search keyword.
+# @router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
+# async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
+#     """
+#     Get a list of products with their images based on the provided product category and search keyword.
 
-    Parameters:
-    - category_id: The ID of the product category.
-    - search_keyword: The search keyword to filter the products.
-    - number: The maximum number of products to return.
-    - startindex: The starting index for pagination.
+#     Parameters:
+#     - category_id: The ID of the product category.
+#     - search_keyword: The search keyword to filter the products.
+#     - number: The maximum number of products to return.
+#     - startindex: The starting index for pagination.
 
-    Returns:
-    - A list of products with their images.
-    """
-    # Create the main query
-    query = filter_products_helper.get_product_by_category_keyword(session=session, category_id=category_id, search_keyword=search_keyword, number=number, startindex=startindex)
+#     Returns:
+#     - A list of products with their images.
+#     """
+#     # Create the main query
+#     query = filter_products_helper.get_product_by_category_keyword(session=session, category_id=category_id, search_keyword=search_keyword, number=number, startindex=startindex)
 
-    # Get the data using the helper function
-    data = filter_products_helper.helper_for_filters(session=session, query=query)
-    return data
+#     # Get the data using the helper function
+#     data = filter_products_helper.helper_for_filters(session=session, query=query)
+#     return data
 
 
 @router.get("/searchbyproductsize/{product_size}/{number}/{startindex}")
@@ -131,6 +131,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
 
 
 # checking revieww things here
+# ___________ in wokring________
 @router.get("/getbynamewithreview/{product_name}/{number}/{startindex}")
 async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
@@ -184,6 +185,28 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
     """
     # Create the main query
     query = fliter_product_with_reviews_helper.get_product_by_category(category_id=category_id, number=number, startindex=startindex)
+    # Get the data using the helper function
+    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    return data
+
+
+@router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
+async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
+    """
+    Get a list of products with their images based on the provided product category and search keyword.
+
+    Parameters:
+    - category_id: The ID of the product category.
+    - search_keyword: The search keyword to filter the products.
+    - number: The maximum number of products to return.
+    - startindex: The starting index for pagination.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Create the main query
+    query = fliter_product_with_reviews_helper.get_product_by_category_keyword(category_id=category_id, search_keyword=search_keyword, number=number, startindex=startindex)
+
     # Get the data using the helper function
     data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
     return data

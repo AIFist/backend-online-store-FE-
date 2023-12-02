@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy import func, select, select
 from server.models.models import Product, ProductImage, Review
 from sqlalchemy import func, select, outerjoin
+from sqlalchemy import or_
 
 def get_products_with_images_and_reviews(product_name, startindex, number):
     # Create the main query
@@ -54,7 +55,7 @@ def get_products(number: int, startindex: int):
     )
     return query
 
-def get_product_by_category(category_id,startindex, number):
+def get_product_by_category(category_id: int,startindex: int, number: int):
     query = (
     select(
         Product,
@@ -71,4 +72,26 @@ def get_product_by_category(category_id,startindex, number):
     .order_by(Product.id)
     .distinct(Product.id)
     )
+    return query
+
+
+def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
+    query = (
+    select(
+        Product,
+        ProductImage,
+        func.count(Review.id).label("num_reviews"),
+        func.avg(Review.rating).label("avg_rating")
+    )
+    .outerjoin(ProductImage)
+    .outerjoin(Review)
+    .filter(or_(Product.product_name.contains(search_keyword), Product.description.contains(search_keyword)))
+    .filter(Product.category_id == category_id)
+    .offset(startindex)
+    .limit(number)
+    .group_by(Product, ProductImage)
+    .order_by(Product.id)
+    .distinct(Product.id)
+)
+
     return query
