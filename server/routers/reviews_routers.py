@@ -4,7 +4,6 @@ from server.models.models1 import session
 from server.models.models import Review
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import reviews_schemas
-from sqlalchemy import select
 router = APIRouter(prefix="/review", tags=["Review  CRUD"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

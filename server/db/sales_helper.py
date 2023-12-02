@@ -2,7 +2,8 @@ from fastapi import status,HTTPException, Response
 from server.models.models import Sales
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import sales_schemas
-from sqlalchemy.orm import joinedload
+
+
 
 def helper_create_product_sales(session ,product_sales: sales_schemas.ProductSalesCreate):
     """
