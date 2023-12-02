@@ -95,3 +95,34 @@ def get_product_by_category_keyword(category_id: int, search_keyword: str, numbe
 )
 
     return query
+
+def search_product_by_productsize(product_size: str, number: int, startindex: int):
+    """
+    Search products by product size and return a query object.
+    Args:
+        session: The database session.
+        product_size: The size of the product to search for.
+        number: The number of products to retrieve.
+        startindex: The starting index for retrieving products.
+    Returns:
+        A query object that fetches products filtered by product size.
+    """
+    # Call the helper function to execute the query and return the result
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .filter(Product.product_size.contains(product_size))
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
+    return query

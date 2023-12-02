@@ -87,24 +87,24 @@ router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints
 #     return data
 
 
-@router.get("/searchbyproductsize/{product_size}/{number}/{startindex}")
-def get_product_by_size(product_size: str, number: int, startindex: int):
-    """
-    Get multiple products with their images based on the provided product size.
+# @router.get("/searchbyproductsize/{product_size}/{number}/{startindex}")
+# def get_product_by_size(product_size: str, number: int, startindex: int):
+#     """
+#     Get multiple products with their images based on the provided product size.
 
-    Parameters:
-    - product_size: The size of the product.
-    - number: The maximum number of products to fetch.
-    - startindex: The starting index of the products to fetch.
+#     Parameters:
+#     - product_size: The size of the product.
+#     - number: The maximum number of products to fetch.
+#     - startindex: The starting index of the products to fetch.
 
-    Returns:
-    - A list of products with their images.
-    """
-    # Call the helper function to execute the query and return the result
-    query = filter_products_helper.search_product_by_productsize(session=session, product_size=product_size, number=number, startindex=startindex)
-    # Get the data using the helper function
-    data = filter_products_helper.helper_for_filters(session=session, query=query)
-    return data
+#     Returns:
+#     - A list of products with their images.
+#     """
+#     # Call the helper function to execute the query and return the result
+#     query = filter_products_helper.search_product_by_productsize(session=session, product_size=product_size, number=number, startindex=startindex)
+#     # Get the data using the helper function
+#     data = filter_products_helper.helper_for_filters(session=session, query=query)
+#     return data
 
 
 @router.get("/filterbyprice/{min_price}/{max_price}/{number}/{product_name}/{startindex}")
@@ -207,6 +207,25 @@ async def get_product_by_keyword(category_id: int, search_keyword: str, number: 
     # Create the main query
     query = fliter_product_with_reviews_helper.get_product_by_category_keyword(category_id=category_id, search_keyword=search_keyword, number=number, startindex=startindex)
 
+    # Get the data using the helper function
+    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    return data
+
+@router.get("/searchbyproductsize/{product_size}/{number}/{startindex}")
+def get_product_by_size(product_size: str, number: int, startindex: int):
+    """
+    Get multiple products with their images based on the provided product size.
+
+    Parameters:
+    - product_size: The size of the product.
+    - number: The maximum number of products to fetch.
+    - startindex: The starting index of the products to fetch.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Call the helper function to execute the query and return the result
+    query = fliter_product_with_reviews_helper.search_product_by_productsize(product_size=product_size, number=number, startindex=startindex)
     # Get the data using the helper function
     data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
     return data
