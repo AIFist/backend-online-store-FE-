@@ -126,3 +126,24 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     # Get the data using the helper function
     data = filter_products_helper.helper_for_filters(session=session, query=query)
     return data
+
+
+
+# checking reive things here
+@router.get("/getbynamewithreview/{product_name}/{number}/{startindex}")
+async def get_product_by_name(product_name: str, number: int, startindex: int):
+    """
+    Get multiple products with their images based on the provided product name.
+
+    Args:
+    - product_name (str): The name of the product.
+    - number (int): The number of products to retrieve.
+    - startindex (int): The starting index for retrieving the products.
+
+    Returns:
+        dict: A dictionary containing the products and their images.
+    """
+    data = filter_products_helper.get_products_with_images_and_reviews(session=session, product_name=product_name, number=number, startindex=startindex)
+
+    # data = filter_products_helper.helper_for_filters(session=session, query=query)
+    return data
