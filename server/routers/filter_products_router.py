@@ -26,43 +26,43 @@ router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints
 
 
 
-@router.get("/getbyname/{product_name}/{number}/{startindex}")
-async def get_product_by_name(product_name: str, number: int, startindex: int):
-    """
-    Get multiple products with their images based on the provided product name.
+# @router.get("/getbyname/{product_name}/{number}/{startindex}")
+# async def get_product_by_name(product_name: str, number: int, startindex: int):
+#     """
+#     Get multiple products with their images based on the provided product name.
 
-    Args:
-    - product_name (str): The name of the product.
-    - number (int): The number of products to retrieve.
-    - startindex (int): The starting index for retrieving the products.
+#     Args:
+#     - product_name (str): The name of the product.
+#     - number (int): The number of products to retrieve.
+#     - startindex (int): The starting index for retrieving the products.
 
-    Returns:
-        dict: A dictionary containing the products and their images.
-    """
-    query = filter_products_helper.get_product_by_name(session=session, product_name=product_name, number=number, startindex=startindex)
+#     Returns:
+#         dict: A dictionary containing the products and their images.
+#     """
+#     query = filter_products_helper.get_product_by_name(session=session, product_name=product_name, number=number, startindex=startindex)
 
-    data = filter_products_helper.helper_for_filters(session=session, query=query)
-    return data
+#     data = filter_products_helper.helper_for_filters(session=session, query=query)
+#     return data
 
 
-@router.get("/getbycategory/{category_id}/{number}/{startindex}")
-async def get_product_by_category(category_id: int, number: int, startindex: int):
-    """
-    Get multiple products with their images based on the provided category ID.
+# @router.get("/getbycategory/{category_id}/{number}/{startindex}")
+# async def get_product_by_category(category_id: int, number: int, startindex: int):
+#     """
+#     Get multiple products with their images based on the provided category ID.
 
-    Parameters:
-    - category_id: The ID of the category.
-    - number: The number of products to retrieve.
-    - startindex: The starting index of the products to retrieve.
+#     Parameters:
+#     - category_id: The ID of the category.
+#     - number: The number of products to retrieve.
+#     - startindex: The starting index of the products to retrieve.
 
-    Returns:
-    - A list of products with their images.
-    """
-    # Create the main query
-    query = filter_products_helper.get_product_by_category(session=session, category_id=category_id, number=number, startindex=startindex)
-    # Get the data using the helper function
-    data = filter_products_helper.helper_for_filters(session=session, query=query)
-    return data
+#     Returns:
+#     - A list of products with their images.
+#     """
+#     # Create the main query
+#     query = filter_products_helper.get_product_by_category(session=session, category_id=category_id, number=number, startindex=startindex)
+#     # Get the data using the helper function
+#     data = filter_products_helper.helper_for_filters(session=session, query=query)
+#     return data
 
 
 @router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
@@ -130,7 +130,6 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     return data
 
 
-
 # checking revieww things here
 @router.get("/getbynamewithreview/{product_name}/{number}/{startindex}")
 async def get_product_by_name(product_name: str, number: int, startindex: int):
@@ -150,6 +149,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
     return data
 
+
 @router.get("/getproducts/{number}/{startindex}")
 async def get_product_up_to_given_number(number: int, startindex: int):
     """
@@ -165,5 +165,25 @@ async def get_product_up_to_given_number(number: int, startindex: int):
 
     query = fliter_product_with_reviews_helper.get_products(number=number, startindex=startindex)
     
+    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    return data
+
+
+@router.get("/getbycategory/{category_id}/{number}/{startindex}")
+async def get_product_by_category(category_id: int, number: int, startindex: int):
+    """
+    Get multiple products with their images based on the provided category ID.
+
+    Parameters:
+    - category_id: The ID of the category.
+    - number: The number of products to retrieve.
+    - startindex: The starting index of the products to retrieve.
+
+    Returns:
+    - A list of products with their images.
+    """
+    # Create the main query
+    query = fliter_product_with_reviews_helper.get_product_by_category(category_id=category_id, number=number, startindex=startindex)
+    # Get the data using the helper function
     data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
     return data

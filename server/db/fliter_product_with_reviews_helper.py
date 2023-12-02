@@ -54,3 +54,21 @@ def get_products(number: int, startindex: int):
     )
     return query
 
+def get_product_by_category(category_id,startindex, number):
+    query = (
+    select(
+        Product,
+        ProductImage,
+        func.count(Review.id).label("num_reviews"),
+        func.avg(Review.rating).label("avg_rating")
+    )
+    .outerjoin(ProductImage)
+    .outerjoin(Review)
+    .filter(Product.category_id == category_id)
+    .offset(startindex)
+    .limit(number)
+    .group_by(Product, ProductImage)
+    .order_by(Product.id)
+    .distinct(Product.id)
+    )
+    return query
