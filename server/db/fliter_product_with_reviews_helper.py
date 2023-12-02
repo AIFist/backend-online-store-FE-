@@ -2,7 +2,7 @@ from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy import func, select, select
 from server.models.models import Product, ProductImage, Review
-from sqlalchemy import func, select, outerjoin
+from sqlalchemy import func, select
 from sqlalchemy import or_
 
 def get_products_with_images_and_reviews(product_name, startindex, number):

@@ -20,7 +20,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     Returns:
         dict: A dictionary containing the products and their images.
     """
-    query = fliter_product_with_reviews_helper.get_products_with_images_and_reviews(session=session, product_name=product_name, number=number, startindex=startindex)
+    query = fliter_product_with_reviews_helper.get_products_with_images_and_reviews(product_name=product_name, number=number, startindex=startindex)
 
     data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
     return data
