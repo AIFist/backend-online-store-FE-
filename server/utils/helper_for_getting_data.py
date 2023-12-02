@@ -3,6 +3,15 @@ from fastapi import HTTPException
 
 
 def helper_for_filters_with_review(session, query):
+    """
+    Helper function to execute a query and extract product details with images and reviews.
+    Args:
+        session (Session): The database session to execute the query.
+        query (Query): The query to execute.
+    Returns:
+        list: A list of dictionaries containing product details with images and reviews.
+    """
+
     # Execute the query and get the results
     result = session.execute(query).all()
 
