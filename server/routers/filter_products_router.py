@@ -1,26 +1,28 @@
 from fastapi.routing import APIRouter
 from server.models.models1 import session
-from server.db import filter_products_helper
+from server.db import filter_products_helper, fliter_product_with_reviews_helper
+from server.utils import helper_for_getting_data
+
 
 router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints"])
 
-@router.get("/getproducts/{number}/{startindex}")
-async def get_product_up_to_given_number(number: int, startindex: int):
-    """
-    Get a list of products with their images up to the specified number.
+# @router.get("/getproducts/{number}/{startindex}")
+# async def get_product_up_to_given_number(number: int, startindex: int):
+#     """
+#     Get a list of products with their images up to the specified number.
 
-    Parameters:
-    - number: The maximum number of rows to retrieve.
-    - startindex: The starting index of the rows to retrieve.
+#     Parameters:
+#     - number: The maximum number of rows to retrieve.
+#     - startindex: The starting index of the rows to retrieve.
 
-    Returns:
-    - List of products with images.
-    """
+#     Returns:
+#     - List of products with images.
+#     """
 
-    query = filter_products_helper.get_products(session=session, number=number, startindex=startindex)
+#     query = filter_products_helper.get_products(session=session, number=number, startindex=startindex)
     
-    data = filter_products_helper.helper_for_filters(session=session, query=query)
-    return data
+#     data = filter_products_helper.helper_for_filters(session=session, query=query)
+#     return data
 
 
 
@@ -129,7 +131,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
 
 
 
-# checking reive things here
+# checking revieww things here
 @router.get("/getbynamewithreview/{product_name}/{number}/{startindex}")
 async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
@@ -143,7 +145,25 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     Returns:
         dict: A dictionary containing the products and their images.
     """
-    data = filter_products_helper.get_products_with_images_and_reviews(session=session, product_name=product_name, number=number, startindex=startindex)
+    query = fliter_product_with_reviews_helper.get_products_with_images_and_reviews(session=session, product_name=product_name, number=number, startindex=startindex)
 
-    # data = filter_products_helper.helper_for_filters(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    return data
+
+@router.get("/getproducts/{number}/{startindex}")
+async def get_product_up_to_given_number(number: int, startindex: int):
+    """
+    Get a list of products with their images up to the specified number.
+
+    Parameters:
+    - number: The maximum number of rows to retrieve.
+    - startindex: The starting index of the rows to retrieve.
+
+    Returns:
+    - List of products with images.
+    """
+
+    query = fliter_product_with_reviews_helper.get_products(number=number, startindex=startindex)
+    
+    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
     return data
