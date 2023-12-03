@@ -102,7 +102,7 @@ def get_product_by_size(product_size: str, number: int, startindex: int):
     # Call the helper function to execute the query and return the result
     query = fliter_product_with_reviews_helper.search_product_by_productsize(product_size=product_size, number=number, startindex=startindex)
     # Get the data using the helper function
-    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
 
