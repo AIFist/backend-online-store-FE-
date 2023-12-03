@@ -152,12 +152,12 @@ class UserPurchase(Base):
 
 
 # Association Table for Product and Sales (many-to-many relationship)
-product_sales_association = Table(
-    'product_sales',
-    Base.metadata,
-    Column('product_id', Integer, ForeignKey('products.id')),
-    Column('sales_id', Integer, ForeignKey('sales.id')),
-)
+# product_sales_association = Table(
+#     'product_sales',
+#     Base.metadata,
+#     Column('product_id', Integer, ForeignKey('products.id')),
+#     Column('sales_id', Integer, ForeignKey('sales.id')),
+# )
 
 # Connecting the many-to-many relationship
-Product.sales = relationship("Sales", secondary=product_sales_association, back_populates="products")
+# Product.sales = relationship("Sales", secondary=product_sales_association, back_populates="products")

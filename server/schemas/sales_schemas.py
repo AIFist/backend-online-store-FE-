@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 class ProductSalesCreate(BaseModel):
     discount_percent: float
+    product_id:int
     
-class ProdcutSalesUpdate(ProductSalesCreate):
-    pass
-    
+class ProdcutSalesUpdate(BaseModel):
+    discount_percent: float
