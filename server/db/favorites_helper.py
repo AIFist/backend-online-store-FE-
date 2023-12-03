@@ -34,7 +34,10 @@ def helper_create_product_favorite(session, product_favorite: favorites_schemas.
         # Print the error message
         print(f"An error occurred: {e}")
         session.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably product with id {product_favorite.product_id} does not exist or user with id {product_favorite.user_id} does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Foreign key constraint violation or other unprocessable entity error",
+        )
     finally:
         # Close the session
         session.close()

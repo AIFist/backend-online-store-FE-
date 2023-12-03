@@ -66,6 +66,8 @@ class Product(Base):
     carts = relationship("Cart", back_populates="product", cascade="all, delete-orphan")
     favorites = relationship("Favorite", back_populates="product", cascade="all, delete-orphan")
     purchases = relationship("UserPurchase", back_populates="product")  # Added this line
+    sale = relationship("Sales", back_populates="product", uselist=False)  # Added this line
+
     # purchases = relationship("User", secondary="user_purchases", back_populates="purchases")  # Uncommented this line    
 
 class Sales(Base):
@@ -75,7 +77,10 @@ class Sales(Base):
     sale_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
  
     # Establishing many-to-many relationship with Product
-    products = relationship("Product", secondary="product_sales", back_populates="sales")
+    # products = relationship("Product", secondary="product_sales", back_populates="sales")
+    product_id = Column(Integer, ForeignKey('products.id', ondelete="SET NULL"))
+    product = relationship("Product", back_populates="sale", uselist=False)  # Added this line
+
 
 class ProductImage(Base):
     __tablename__ = 'product_images'
@@ -147,12 +152,12 @@ class UserPurchase(Base):
 
 
 # Association Table for Product and Sales (many-to-many relationship)
-product_sales_association = Table(
-    'product_sales',
-    Base.metadata,
-    Column('product_id', Integer, ForeignKey('products.id')),
-    Column('sales_id', Integer, ForeignKey('sales.id')),
-)
+# product_sales_association = Table(
+#     'product_sales',
+#     Base.metadata,
+#     Column('product_id', Integer, ForeignKey('products.id')),
+#     Column('sales_id', Integer, ForeignKey('sales.id')),
+# )
 
 # Connecting the many-to-many relationship
-Product.sales = relationship("Sales", secondary=product_sales_association, back_populates="products")
+# Product.sales = relationship("Sales", secondary=product_sales_association, back_populates="products")

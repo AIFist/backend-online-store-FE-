@@ -1,9 +1,11 @@
 from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy import func, select, select
-from server.models.models import Product, ProductImage, Review
+from server.models.models import Product, ProductImage, Review, Sales
 from sqlalchemy import func, select
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
+
+
 
 def get_products_with_images_and_reviews(product_name, startindex, number):
     """
@@ -16,22 +18,35 @@ def get_products_with_images_and_reviews(product_name, startindex, number):
         Query: The SQLAlchemy query object.
     """
     # Create the main query
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
     query = (
-    select(
-        Product,
-        ProductImage,
-        func.count(Review.id).label("num_reviews"),
-        func.avg(Review.rating).label("avg_rating")
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(Product.product_name.contains(product_name))
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
     )
-    .outerjoin(ProductImage)
-    .outerjoin(Review)
-    .filter(Product.product_name.contains(product_name))
-    .offset(startindex)
-    .limit(number)
-    .group_by(Product, ProductImage)
-    .order_by(Product.id)
-    .distinct(Product.id)
-    )
+
     return query
 
 def get_products(number: int, startindex: int):
@@ -46,20 +61,32 @@ def get_products(number: int, startindex: int):
         A query object that can be executed to retrieve the products and their images.
     """
     # Create the main query to retrieve products and their images
-    query = (
-    select(
-        Product,
-        ProductImage,
-        func.count(Review.id).label("num_reviews"),
-        func.avg(Review.rating).label("avg_rating")
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
     )
-    .outerjoin(ProductImage)
-    .outerjoin(Review)
-    .offset(startindex)
-    .limit(number)
-    .group_by(Product, ProductImage)
-    .order_by(Product.id)
-    .distinct(Product.id)
+
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
     )
     return query
 
@@ -76,22 +103,35 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
     Returns:
     - query: SQLAlchemy query object
     """
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
     query = (
-    select(
-        Product,
-        ProductImage,
-        func.count(Review.id).label("num_reviews"),
-        func.avg(Review.rating).label("avg_rating")
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(Product.category_id == category_id)
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
     )
-    .outerjoin(ProductImage)
-    .outerjoin(Review)
-    .filter(Product.category_id == category_id)
-    .offset(startindex)
-    .limit(number)
-    .group_by(Product, ProductImage)
-    .order_by(Product.id)
-    .distinct(Product.id)
-    )
+
     return query
 
 
@@ -106,25 +146,38 @@ def get_product_by_category_keyword(category_id: int, search_keyword: str, numbe
     Returns:
         sqlalchemy.orm.query.Query: The query object to retrieve the products.
     """
-    query = (
-    select(
-        Product,
-        ProductImage,
-        func.count(Review.id).label("num_reviews"),
-        func.avg(Review.rating).label("avg_rating")
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
     )
-    .outerjoin(ProductImage)
-    .outerjoin(Review)
-    .filter(or_(Product.product_name.contains(search_keyword), Product.description.contains(search_keyword)))
-    .filter(Product.category_id == category_id)
-    .offset(startindex)
-    .limit(number)
-    .group_by(Product, ProductImage)
-    .order_by(Product.id)
-    .distinct(Product.id)
-)
+
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(or_(Product.product_name.contains(search_keyword), Product.description.contains(search_keyword)))
+        .filter(Product.category_id == category_id)
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
 
     return query
+
 
 def search_product_by_productsize(product_size: str, number: int, startindex: int):
     """
@@ -138,19 +191,32 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         A query object that fetches products filtered by product size.
     """
     # Call the helper function to execute the query and return the result
+    
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
     query = (
         select(
             Product,
             ProductImage,
             func.count(Review.id).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating")
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
         )
         .outerjoin(ProductImage)
         .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
         .filter(Product.product_size.contains(product_size))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage)
+        .group_by(Product, ProductImage, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -170,23 +236,37 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
         A query object that fetches products filtered by price range.
     """
     # Create the query object
+    
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
     query = (
         select(
             Product,
             ProductImage,
             func.count(Review.id).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating")
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
         )
         .outerjoin(ProductImage)
         .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
         .filter(Product.price >= min_price)
         .filter(Product.price <= max_price)
         .filter(Product.product_name.contains(product_name))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage)
+        .group_by(Product, ProductImage, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
+
 
     return query

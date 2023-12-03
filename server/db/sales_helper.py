@@ -34,6 +34,10 @@ def helper_create_product_sales(session ,product_sales: sales_schemas.ProductSal
 
         # Rollback the transaction
         session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Foreign key constraint violation or other unprocessable entity error",
+    )
     finally:
         # Close the session
         session.close()
@@ -71,8 +75,10 @@ def helper_update_product_sales(session, id: int, product_sales_update: sales_sc
 
         # Rollback the transaction
         session.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably product with id {id} does not exist.")
-
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Foreign key constraint violation or other unprocessable entity error",
+        )
     finally:
         # Close the session
         session.close()

@@ -32,7 +32,10 @@ def create_product_cart(session, product_cart: cart_schemas.ProductCartCreate):
 
         # Rollback the transaction
         session.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably product with id {product_cart.product_id} does not exist or user with id {product_cart.user_id} does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Foreign key constraint violation or other unprocessable entity error",
+        )
     finally:
         # Close the session
         session.close()
@@ -71,6 +74,10 @@ def update_product_cart(session, id: int, product_cart_update: cart_schemas.Prod
 
         # Rollback the transaction
         session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Foreign key constraint violation or other unprocessable entity error",
+        )
     finally:
         # Close the session
         session.close()
