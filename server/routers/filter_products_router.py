@@ -22,7 +22,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
     query = fliter_product_with_reviews_helper.get_products_with_images_and_reviews(product_name=product_name, number=number, startindex=startindex)
 
-    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
 
@@ -41,7 +41,7 @@ async def get_product_up_to_given_number(number: int, startindex: int):
 
     query = fliter_product_with_reviews_helper.get_products(number=number, startindex=startindex)
     
-    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
 
