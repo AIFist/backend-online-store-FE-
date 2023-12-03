@@ -63,36 +63,36 @@ from sqlalchemy import or_, and_
 #     )
 #     return query
 
-def get_product_by_category(category_id: int,startindex: int, number: int):
-    """
-    Retrieve products by category with additional information:
-    - ProductImage
-    - Number of reviews
-    - Average rating
-    Args:
-    - category_id: int - the ID of the category
-    - startindex: int - the starting index for pagination
-    - number: int - the number of products to retrieve
-    Returns:
-    - query: SQLAlchemy query object
-    """
-    query = (
-    select(
-        Product,
-        ProductImage,
-        func.count(Review.id).label("num_reviews"),
-        func.avg(Review.rating).label("avg_rating")
-    )
-    .outerjoin(ProductImage)
-    .outerjoin(Review)
-    .filter(Product.category_id == category_id)
-    .offset(startindex)
-    .limit(number)
-    .group_by(Product, ProductImage)
-    .order_by(Product.id)
-    .distinct(Product.id)
-    )
-    return query
+# def get_product_by_category(category_id: int,startindex: int, number: int):
+#     """
+#     Retrieve products by category with additional information:
+#     - ProductImage
+#     - Number of reviews
+#     - Average rating
+#     Args:
+#     - category_id: int - the ID of the category
+#     - startindex: int - the starting index for pagination
+#     - number: int - the number of products to retrieve
+#     Returns:
+#     - query: SQLAlchemy query object
+#     """
+#     query = (
+#     select(
+#         Product,
+#         ProductImage,
+#         func.count(Review.id).label("num_reviews"),
+#         func.avg(Review.rating).label("avg_rating")
+#     )
+#     .outerjoin(ProductImage)
+#     .outerjoin(Review)
+#     .filter(Product.category_id == category_id)
+#     .offset(startindex)
+#     .limit(number)
+#     .group_by(Product, ProductImage)
+#     .order_by(Product.id)
+#     .distinct(Product.id)
+#     )
+#     return query
 
 
 def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
@@ -275,4 +275,48 @@ def get_products(number: int, startindex: int):
         .order_by(Product.id)
         .distinct(Product.id)
     )
+    return query
+
+def get_product_by_category(category_id: int,startindex: int, number: int):
+    """
+    Retrieve products by category with additional information:
+    - ProductImage
+    - Number of reviews
+    - Average rating
+    Args:
+    - category_id: int - the ID of the category
+    - startindex: int - the starting index for pagination
+    - number: int - the number of products to retrieve
+    Returns:
+    - query: SQLAlchemy query object
+    """
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(Product.category_id == category_id)
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
     return query

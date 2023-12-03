@@ -61,7 +61,7 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
     # Create the main query
     query = fliter_product_with_reviews_helper.get_product_by_category(category_id=category_id, number=number, startindex=startindex)
     # Get the data using the helper function
-    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
 
