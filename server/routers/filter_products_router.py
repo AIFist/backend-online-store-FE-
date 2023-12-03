@@ -83,7 +83,7 @@ async def get_product_by_keyword(category_id: int, search_keyword: str, number: 
     query = fliter_product_with_reviews_helper.get_product_by_category_keyword(category_id=category_id, search_keyword=search_keyword, number=number, startindex=startindex)
 
     # Get the data using the helper function
-    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
 @router.get("/searchbyproductsize/{product_size}/{number}/{startindex}")

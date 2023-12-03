@@ -95,36 +95,36 @@ from sqlalchemy import or_, and_
 #     return query
 
 
-def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
-    """
-    Retrieve products based on category, search keyword, and pagination.
-    Args:
-        category_id (int): The ID of the category to filter the products by.
-        search_keyword (str): The keyword to search for in the product name and description.
-        number (int): The number of products to retrieve.
-        startindex (int): The starting index of the retrieved products.
-    Returns:
-        sqlalchemy.orm.query.Query: The query object to retrieve the products.
-    """
-    query = (
-    select(
-        Product,
-        ProductImage,
-        func.count(Review.id).label("num_reviews"),
-        func.avg(Review.rating).label("avg_rating")
-    )
-    .outerjoin(ProductImage)
-    .outerjoin(Review)
-    .filter(or_(Product.product_name.contains(search_keyword), Product.description.contains(search_keyword)))
-    .filter(Product.category_id == category_id)
-    .offset(startindex)
-    .limit(number)
-    .group_by(Product, ProductImage)
-    .order_by(Product.id)
-    .distinct(Product.id)
-)
+# def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
+#     """
+#     Retrieve products based on category, search keyword, and pagination.
+#     Args:
+#         category_id (int): The ID of the category to filter the products by.
+#         search_keyword (str): The keyword to search for in the product name and description.
+#         number (int): The number of products to retrieve.
+#         startindex (int): The starting index of the retrieved products.
+#     Returns:
+#         sqlalchemy.orm.query.Query: The query object to retrieve the products.
+#     """
+#     query = (
+#     select(
+#         Product,
+#         ProductImage,
+#         func.count(Review.id).label("num_reviews"),
+#         func.avg(Review.rating).label("avg_rating")
+#     )
+#     .outerjoin(ProductImage)
+#     .outerjoin(Review)
+#     .filter(or_(Product.product_name.contains(search_keyword), Product.description.contains(search_keyword)))
+#     .filter(Product.category_id == category_id)
+#     .offset(startindex)
+#     .limit(number)
+#     .group_by(Product, ProductImage)
+#     .order_by(Product.id)
+#     .distinct(Product.id)
+# )
 
-    return query
+#     return query
 
 def search_product_by_productsize(product_size: str, number: int, startindex: int):
     """
@@ -311,6 +311,50 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(Product.category_id == category_id)
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
+    return query
+
+
+def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
+    """
+    Retrieve products based on category, search keyword, and pagination.
+    Args:
+        category_id (int): The ID of the category to filter the products by.
+        search_keyword (str): The keyword to search for in the product name and description.
+        number (int): The number of products to retrieve.
+        startindex (int): The starting index of the retrieved products.
+    Returns:
+        sqlalchemy.orm.query.Query: The query object to retrieve the products.
+    """
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(or_(Product.product_name.contains(search_keyword), Product.description.contains(search_keyword)))
         .filter(Product.category_id == category_id)
         .offset(startindex)
         .limit(number)
