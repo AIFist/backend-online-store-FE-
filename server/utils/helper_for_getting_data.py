@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 
-
+# function is useless for now and i am adding bresking point here just for reminder 
 def helper_for_filters_with_review(session, query):
     """
     Helper function to execute a query and extract product details with images and reviews.
