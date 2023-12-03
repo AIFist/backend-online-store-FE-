@@ -157,39 +157,39 @@ from sqlalchemy import or_, and_
 
 #     return query
 
-def filter_product_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
-    """
-    Filter products by price range and return a query object.
-    Args:
-        min_price: The minimum price of the product to filter by.
-        max_price: The maximum price of the product to filter by.
-        number: The number of products to retrieve.
-        product_name: The name of the product to filter by.
-        startindex: The starting index for retrieving products.
-    Returns:
-        A query object that fetches products filtered by price range.
-    """
-    # Create the query object
-    query = (
-        select(
-            Product,
-            ProductImage,
-            func.count(Review.id).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating")
-        )
-        .outerjoin(ProductImage)
-        .outerjoin(Review)
-        .filter(Product.price >= min_price)
-        .filter(Product.price <= max_price)
-        .filter(Product.product_name.contains(product_name))
-        .offset(startindex)
-        .limit(number)
-        .group_by(Product, ProductImage)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
+# def filter_product_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
+#     """
+#     Filter products by price range and return a query object.
+#     Args:
+#         min_price: The minimum price of the product to filter by.
+#         max_price: The maximum price of the product to filter by.
+#         number: The number of products to retrieve.
+#         product_name: The name of the product to filter by.
+#         startindex: The starting index for retrieving products.
+#     Returns:
+#         A query object that fetches products filtered by price range.
+#     """
+#     # Create the query object
+#     query = (
+#         select(
+#             Product,
+#             ProductImage,
+#             func.count(Review.id).label("num_reviews"),
+#             func.avg(Review.rating).label("avg_rating")
+#         )
+#         .outerjoin(ProductImage)
+#         .outerjoin(Review)
+#         .filter(Product.price >= min_price)
+#         .filter(Product.price <= max_price)
+#         .filter(Product.product_name.contains(product_name))
+#         .offset(startindex)
+#         .limit(number)
+#         .group_by(Product, ProductImage)
+#         .order_by(Product.id)
+#         .distinct(Product.id)
+#     )
 
-    return query
+#     return query
 
 # ___- discount workd_________________
 
@@ -378,22 +378,7 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         A query object that fetches products filtered by product size.
     """
     # Call the helper function to execute the query and return the result
-    query = (
-        select(
-            Product,
-            ProductImage,
-            func.count(Review.id).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating")
-        )
-        .outerjoin(ProductImage)
-        .outerjoin(Review)
-        .filter(Product.product_size.contains(product_size))
-        .offset(startindex)
-        .limit(number)
-        .group_by(Product, ProductImage)
-        .order_by(Product.id)
-        .distinct(Product.id)
-    )
+    
     subquery = (
         select(
             Sales.product_id,
@@ -422,5 +407,53 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         .order_by(Product.id)
         .distinct(Product.id)
     )
+
+    return query
+
+def filter_product_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
+    """
+    Filter products by price range and return a query object.
+    Args:
+        min_price: The minimum price of the product to filter by.
+        max_price: The maximum price of the product to filter by.
+        number: The number of products to retrieve.
+        product_name: The name of the product to filter by.
+        startindex: The starting index for retrieving products.
+    Returns:
+        A query object that fetches products filtered by price range.
+    """
+    # Create the query object
+    
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(Product.price >= min_price)
+        .filter(Product.price <= max_price)
+        .filter(Product.product_name.contains(product_name))
+        .offset(startindex)
+        .limit(number)
+        .group_by(Product, ProductImage, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+
 
     return query

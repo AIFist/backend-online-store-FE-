@@ -125,5 +125,5 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     query = fliter_product_with_reviews_helper.filter_product_by_price(min_price=min_price, max_price=max_price, number=number, product_name=product_name, startindex=startindex)
 
     # Get the data using the helper function
-    data = helper_for_getting_data.helper_for_filters_with_review(session=session, query=query)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
