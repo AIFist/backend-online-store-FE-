@@ -35,13 +35,31 @@ def get_trending_products_with_reviews(number_of_products):
     Args:
         number_of_products (_type_): _description_
     """
-    pass
+    query = landing_page_helper.get_trending_product_with_reviews(number_of_products=number_of_products)
+
+    # data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
+    # return data
+    result = session.execute(query).all()
+    return result
 
 
 @router.get("/gettopratedproducts/{number_of_products}")
 def get_top_rated_products(number_of_products: int):
-    
+    """
+    Get the top rated products.
+
+    Args:
+        number_of_products (int): The number of products to retrieve.
+
+    Returns:
+        data (List[dict]): A list of dictionaries representing the top rated products.
+    """
+    # Call the helper function to get the query for retrieving top rated products
     query = landing_page_helper.get_top_rated_products_helper(number_of_products=number_of_products)
 
+    # Call the helper function to get the data with filters for review and discount
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
+
     return data
+
+
