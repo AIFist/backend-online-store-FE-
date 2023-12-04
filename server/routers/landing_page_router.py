@@ -5,7 +5,8 @@ from sqlalchemy.sql.expression import func, desc
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
-
+from server.db import landing_page_helper 
+from server.utils import helper_for_getting_data
 
 router = APIRouter(prefix="/landingpage", tags=["landing page Endpoints"])
 
@@ -20,39 +21,67 @@ def get_random_products(number_of_products):
     Returns:
         List: A list of dictionaries containing product information.
     """
-    # Use aliased to create an alias for the Product table
-    product_alias = aliased(Product)
+    query = landing_page_helper.get_random(number_of_products=number_of_products)
+    
 
-    # Create a subquery to get a random subset of product IDs
-    random_product_ids = (
-        select([Product.id])
-        .order_by(func.random())
-        .limit(number_of_products)
-    ).alias("random_products")
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
+    return data
 
-    # Create the main query to retrieve product details for the random subset
-    query = (
-        select(
-            product_alias,
-            ProductImage,
-            func.count(Review.id).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating"),
-            Sales.discount_percent.label("latest_discount_percent")
+
+@router.get("/gettrendingproducts/{number_of_products}")
+def get_trending_products_with_reviews(number_of_products):
+    """
+    This endpoint is in progress.
+
+    Args:
+        number_of_products (_type_): _description_
+    """
+    pass
+
+
+@router.get("/gettopratedproducts/{number_of_products}")
+def get_top_rated_products(number_of_products: int):
+    try:
+        # Use aliased to create an alias for the Review table
+        review_alias = aliased(Review)
+
+        # Create a subquery to get the number of reviews and average rating for each product
+        review_info_subquery = (
+            select([
+                Product.id,
+                func.count(review_alias.id).label("num_reviews"),
+                func.avg(review_alias.rating).label("avg_rating")
+            ])
+            .outerjoin(review_alias)
+            .group_by(Product.id)
+        ).alias("review_info")
+
+        # Create the main query to retrieve product details with reviews and discounts
+        query = (
+            select([
+                Product,
+                ProductImage,
+                review_info_subquery.c.num_reviews,
+                review_info_subquery.c.avg_rating,
+                Sales.discount_percent.label("latest_discount_percent")
+            ])
+            .select_from(Product)  # Explicitly set the main table
+            .outerjoin(ProductImage)
+            .outerjoin(review_info_subquery, Product.id == review_info_subquery.c.id)
+            .outerjoin(Sales, Product.id == Sales.product_id)
+            .order_by(desc(review_info_subquery.c.avg_rating))
+            .limit(number_of_products)
         )
-        .outerjoin(ProductImage)
-        .outerjoin(Review)
-        .outerjoin(Sales)
-        .filter(product_alias.id == random_product_ids.c.id)
-        .group_by(product_alias, ProductImage, Sales.discount_percent)
-        .order_by(product_alias.id)
-        .distinct(product_alias.id)
-    )
 
-    # Execute the query and fetch the result
-    result = session.execute(query).all()
+        # Execute the query and fetch the result
+        result = session.execute(query).all()
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        # Handle the error or log it as needed
+        return {"error": "Internal Server Error"}
 
     # Extract the product details from the result
-    products = [
+    top_rated_products = [
         {
             "id": product.id,
             "product_name": product.product_name,
@@ -73,15 +102,4 @@ def get_random_products(number_of_products):
         for product, image, num_reviews, avg_rating, latest_discount_percent in result
     ]
 
-    return products
-
-
-@router.get("/gettrendingproducts/{number_of_products}")
-def get_trending_products_with_reviews(number_of_products):
-    """
-    This endpoint is in progress.
-
-    Args:
-        number_of_products (_type_): _description_
-    """
-    pass
+    return top_rated_products
