@@ -81,3 +81,41 @@ def helper_for_filters_with_review_and_discount(session, query):
     ]
 
     return products_with_images_and_reviews    
+
+def helper_for_getting_data_tranding(session, query):
+    """
+    Helper function to execute a query and extract product details with images and reviews.
+    Args:
+        session (Session): The database session to execute the query.
+        query (Query): The query to execute.
+    Returns:
+        list: A list of dictionaries containing product details with images and reviews.
+    """
+    # Execute the query and get the results
+    result = session.execute(query).all()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Products not found")
+    # Extract the Product, ProductImage, number of reviews, average rating, and purchase count from the result
+    products_with_images_and_reviews = [
+        {
+            "id": product.id,
+            "product_name": product.product_name,
+            "description": product.description,
+            "price": product.price,
+            "stock_quantity": product.stock_quantity,
+            "product_size": product.product_size,
+            "SKU": product.SKU,
+            "target_audience": product.target_audience,
+            "product_color": product.product_color,
+            "created_at": product.created_at,
+            "category_id": product.category_id,
+            "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
+            "num_reviews": num_reviews,
+            "avg_rating": avg_rating,
+            "avg_discount_percent": avg_discount_percent,
+            "purchase_count": purchase_count  # Include the purchase count in the result
+        }
+        for product, image, num_reviews, avg_rating, avg_discount_percent, purchase_count in result
+    ]
+    return products_with_images_and_reviews

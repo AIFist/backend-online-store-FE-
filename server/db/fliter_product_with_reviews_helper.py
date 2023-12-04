@@ -1,6 +1,6 @@
 from sqlalchemy import func
 from sqlalchemy import select
-from sqlalchemy import func, select, select
+from sqlalchemy import func, select
 from server.models.models import Product, ProductImage, Review, Sales
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
