@@ -74,7 +74,7 @@ def get_top_rated_products_helper(number_of_products: int = 5):
     return query
 
 
-
+# purchase_counts_subquery not wokring properly
 def get_trending_product_with_reviews(number_of_products: int):
     # Use aliased to create an alias for the Review table
     review_alias = aliased(Review)
@@ -128,9 +128,10 @@ def get_trending_product_with_reviews(number_of_products: int):
     .outerjoin(purchase_counts_subquery, Product.id == purchase_counts_subquery.c.product_id)
     .filter(review_info_subquery.c.num_reviews > 0)
     .order_by(
+        desc(review_info_subquery.c.num_reviews),
         desc(purchase_counts_subquery.c.purchase_count),
-        desc(review_info_subquery.c.avg_rating),
-        desc(review_info_subquery.c.num_reviews)
+        desc(review_info_subquery.c.avg_rating)
+        # desc(review_info_subquery.c.num_reviews)
     )
     .distinct(review_info_subquery.c.avg_rating, review_info_subquery.c.num_reviews, purchase_counts_subquery.c.purchase_count, Product.id)  # Ensure distinct products in the result
 
