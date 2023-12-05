@@ -67,7 +67,7 @@ class Product(Base):
     favorites = relationship("Favorite", back_populates="product", cascade="all, delete-orphan")
     purchases = relationship("UserPurchase", back_populates="product")  # Added this line
     sale = relationship("Sales", back_populates="product", uselist=False)  # Added this line
-
+    featured_product = relationship("FeaturedProduct", back_populates="product")
     # purchases = relationship("User", secondary="user_purchases", back_populates="purchases")  # Uncommented this line    
 
 class Sales(Base):
@@ -143,3 +143,12 @@ class UserPurchase(Base):
     user = relationship("User", back_populates="purchases")
     product = relationship("Product", back_populates="purchases")
 
+
+class FeaturedProduct(Base):
+    __tablename__ = "featured_products"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey('products.id'))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+    product = relationship("Product", back_populates="featured_product")
