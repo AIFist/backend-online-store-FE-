@@ -96,24 +96,10 @@ def get_trending_product_with_reviews(number_of_products: int):
         .group_by(UserPurchase.product_id)
     ).alias("purchase_counts")
 
-    # Create the main query to retrieve product details with reviews, purchases, and discounts
-    # Aliasing the Product table
-    # Aliasing the Product table
-    # product_alias = aliased(Product)
+    # Create the main query to retrieve product details with reviews and discounts
 
     query = (
     select([
-        # distinct(product_alias.id).label("product_id"),
-        # product_alias.product_name.label("product_name"),
-        # product_alias.description.label("description"),
-        # product_alias.price.label("price"),
-        # product_alias.stock_quantity.label("stock_quantity"),
-        # product_alias.product_size.label("product_size"),
-        # product_alias.SKU.label("SKU"),
-        # product_alias.target_audience.label("target_audience"),
-        # product_alias.product_color.label("product_color"),
-        # product_alias.created_at.label("created_at"),
-        # product_alias.category_id.label("category_id"),
         Product,
         ProductImage,
         review_info_subquery.c.num_reviews.label("num_reviews"),

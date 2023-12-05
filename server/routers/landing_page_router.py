@@ -1,10 +1,5 @@
 from fastapi.routing import APIRouter
 from server.models.models1 import session
-from server.models.models import ProductImage, Review, UserPurchase, Product, Sales
-from sqlalchemy.sql.expression import func, desc
-from sqlalchemy.orm import aliased
-from sqlalchemy import func, select
-from sqlalchemy.exc import SQLAlchemyError
 from server.db import landing_page_helper 
 from server.utils import helper_for_getting_data
 
