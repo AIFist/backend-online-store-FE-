@@ -22,6 +22,12 @@ db = SessionLocal()
 
 
 def get_db():
+    """
+    Generator function that returns a SQLAlchemy session object.
+    This function is used as a context manager to ensure the session is properly closed.
+    Yields:
+        Session: A SQLAlchemy session object.
+    """
     db = SessionLocal()
     try:
         yield db

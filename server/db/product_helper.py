@@ -42,6 +42,14 @@ from server.schemas import product_schemas
 
 
 def helper_for_get_one_product(session, id: int):
+    """
+    Retrieve a single product with its images from the database based on the provided ID.
+    Args:
+        session (Session): The SQLAlchemy session.
+        id (int): The ID of the product to retrieve.
+    Returns:
+        dict: A dictionary containing the product information and its images.
+    """
     # Create a query to select the Product and ProductImage based on the provided ID
     query = (
         select(Product, ProductImage)
@@ -81,6 +89,15 @@ def helper_for_get_one_product(session, id: int):
 
 
 def helper_update_product(session, id:int, product_update:product_schemas.ProductUpadte):
+    """
+    Updates a product in the database with the provided ID and new data.
+    Args:
+        session: The database session
+        id (int): The ID of the product to be updated
+        product_update (product_schemas.ProductUpadte): The new data for the product
+    Returns:
+        The updated product
+    """
     try:
         # Retrieve the product from the database based on the provided ID
         product_query = session.query(Product).filter(Product.id == id)
@@ -108,6 +125,14 @@ def helper_update_product(session, id:int, product_update:product_schemas.Produc
 
 
 def helper_for_deleting_product(session, id:int):
+    """
+    Deletes a product from the database with the given ID.
+    Args:
+        session (Session): The SQLAlchemy session object.
+        id (int): The ID of the product to delete.
+    Returns:
+        Response: A response object with status code 204 if successful.
+    """
     try:
         # Query the product with the given id
         product_query = session.query(Product).filter(Product.id == id)
@@ -135,6 +160,16 @@ def helper_for_deleting_product(session, id:int):
 
 
 def helper_create_product(session, product_data: product_schemas.ProductCreate):
+    """
+    Creates a new product in the database.
+    Args:
+        session: SQLAlchemy session object.
+        product_data: ProductCreate object containing the data for the new product.
+    Returns:
+        The newly created product.
+    Raises:
+        HTTPException: If there is a foreign key constraint violation or other unprocessable entity error.
+    """
     try:
         # Convert the Pydantic model to a SQLAlchemy model
         new_product = Product(**product_data.model_dump(exclude={"images"}))

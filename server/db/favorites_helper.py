@@ -1,7 +1,7 @@
 from fastapi import status,HTTPException, Response
 from server.schemas import favorites_schemas
 from server.models.models import Favorite as Favorites
-from server.models.models import Product, User , ProductImage
+from server.models.models import Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 

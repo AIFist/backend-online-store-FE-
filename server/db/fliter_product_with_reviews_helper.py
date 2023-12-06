@@ -2,8 +2,7 @@ from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy import func, select
 from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct
-from sqlalchemy.orm import aliased
-from sqlalchemy import func, select,join
+from sqlalchemy import func, select
 from sqlalchemy import or_, and_
 
 
