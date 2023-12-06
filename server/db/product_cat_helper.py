@@ -6,6 +6,16 @@ from server.schemas import product_cat_schemas
 
 
 def helper_create_product_category(session, product_category: product_cat_schemas.ProductCategoryCreate ):
+    """
+    Create a new product category and save it to the database.
+
+    Args:
+        session: The SQLAlchemy session object.
+        product_category: An instance of the ProductCategoryCreate model.
+
+    Returns:
+        The newly created ProductCategory instance.
+    """
     try:
         # Create a new ProductCategory instance using the data from the product_category model
         new_product_category = ProductCategory(**product_category.model_dump())
@@ -34,10 +44,23 @@ def helper_create_product_category(session, product_category: product_cat_schema
     return new_product_category
 
 def helper_delete_product_category(session, id: int):
+    """
+    Deletes a product category by ID.
+
+    Args:
+        session: The database session.
+        id: The ID of the product category to delete.
+
+    Raises:
+        HTTPException: If the product category does not exist.
+
+    Returns:
+        Response: A response with no content.
+    """
     # Query the product category by ID
     product_cat_query = session.query(ProductCategory).filter(ProductCategory.id == id)
     product_cat = product_cat_query.first()
-    
+
     # Check if the product category exists
     if product_cat is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -51,6 +74,19 @@ def helper_delete_product_category(session, id: int):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 def helper_update_product_category(session, id: int, productcat_update: product_cat_schemas.ProductCategoryUpdate):
+    
+    """
+    Update a product category in the database.
+    Args:
+        session: SQLAlchemy session object.
+        id (int): ID of the product category to update.
+        productcat_update (ProductCategoryUpdate): Object containing the updated data.
+    Returns:
+        ProductCategory: The updated product category.
+    Raises:
+        HTTPException: If the product category does not exist.
+    """
+    
     try: 
         # Retrieve the product category from the database
         product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
@@ -78,6 +114,18 @@ def helper_update_product_category(session, id: int, productcat_update: product_
 
 
 def helper_get_product_category(session):
+     
+    """
+    Retrieves all product categories from the database.
+    Args:
+        session: The SQLAlchemy database session.
+    Returns:
+        A list of tuples with category id and name.
+        
+    Raises:
+        HTTPException: If the product category table is empty.
+    """
+    
      # Query all product categories
     categories = session.query(ProductCategory.id, ProductCategory.category_name).all()
     
@@ -91,6 +139,21 @@ def helper_get_product_category(session):
         
 
 def helper_get_one_product_category(session, id: int):
+    
+    """
+    Retrieve a single product category from the database by ID.
+    
+    Args:
+        session: The database session object.
+        id: The ID of the product category to retrieve.
+    
+    Returns:
+        The product category object.
+    
+    Raises:
+        HTTPException: If the product category with the given ID is not found.
+    """
+    
     product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
     if not product_category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
