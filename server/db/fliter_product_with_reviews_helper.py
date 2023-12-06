@@ -5,7 +5,6 @@ from server.models.models import Product, ProductImage, Review, Sales, FeaturedP
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, select,join
 from sqlalchemy import or_, and_
-from collections import defaultdict
 
 
 
@@ -273,7 +272,7 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
 
     return query
 
-def get_featured_products(session, number: int, startindex: int):
+def get_featured_products(number: int, startindex: int):
     cte = (
         select(
             FeaturedProduct.product_id,
@@ -300,28 +299,4 @@ def get_featured_products(session, number: int, startindex: int):
         .order_by(cte.c.rownum)
     )
 
-    result = session.execute(query).all()
-
-    # Use defaultdict to organize products with their images
-    products_dict = defaultdict(lambda: {"Product": None, "ProductImages": [], "num_reviews": 0, "avg_rating": None, "rownum": None})
-
-    for row in result:
-        product_id = row.Product.id
-        if not products_dict[product_id]["Product"]:
-            products_dict[product_id]["Product"] = row.Product
-
-        # Append each image to the ProductImages list
-        products_dict[product_id]["ProductImages"].append({"id": row.ProductImage.id, "product_id": product_id, "image_path": row.ProductImage.image_path})
-
-        # Sum up the reviews and calculate the average rating
-        products_dict[product_id]["num_reviews"] += row.num_reviews
-        if row.avg_rating is not None:
-            products_dict[product_id]["avg_rating"] = row.avg_rating
-
-        # Save the rownum for each product
-        products_dict[product_id]["rownum"] = row.rownum
-
-    # Convert the dictionary values to a list of results
-    final_result = [result for result in products_dict.values()]
-
-    return final_result
+    return query

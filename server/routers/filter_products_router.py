@@ -142,7 +142,7 @@ async def get_featured_product_up_to_given_number(number: int, startindex: int):
     - List of products with images.
     """
     # Get the query to retrieve featured products
-    result = fliter_product_with_reviews_helper.get_featured_products(session = session, number=number, startindex=startindex)
+    query = fliter_product_with_reviews_helper.get_featured_products(number=number, startindex=startindex)
     
     # Get the data for the retrieved products
     # data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
@@ -150,4 +150,5 @@ async def get_featured_product_up_to_given_number(number: int, startindex: int):
     # Return the retrieved data
     # return data
     # result = session.execute(query).all()
+    result =helper_for_getting_data.helper_get_featured_products(session= session, query=query)
     return result
