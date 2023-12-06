@@ -3,7 +3,7 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_cat_schemas
 from server.db import product_cat_helper
-
+from typing import List
 
 router = APIRouter(prefix="/product_cat", tags=["Product category CRUD"])
 
@@ -20,6 +20,27 @@ async def create_product_category(product_category: product_cat_schemas.ProductC
     """
     data = product_cat_helper.helper_create_product_category(session=session, product_category=product_category)
     return data
+
+
+@router.post("/createall", status_code=status.HTTP_201_CREATED)
+async def create_product(
+    products_category: List[product_cat_schemas.ProductCategoryCreate] = Body(...)):
+    """
+    Create multiple product categories and return the created categories.
+
+    Parameters:
+    - products_category: A list of product categories to be created.
+
+    Returns:
+    - A list of the created product categories.
+    """
+    created_categories = []
+    for product_category in products_category:
+        created_category = product_cat_helper.helper_create_product_category(
+            session=session, product_category=product_category
+        )
+        created_categories.append(created_category)
+    return created_categories
 
 
 # Delete a product category
