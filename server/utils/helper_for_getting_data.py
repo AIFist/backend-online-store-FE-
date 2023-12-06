@@ -123,6 +123,16 @@ def helper_for_getting_data_tranding(session, query):
     return products_with_images_and_reviews
 
 def helper_get_featured_products(session, query):
+    """
+    Retrieves and organizes featured products with their images from the database.
+
+    Args:
+        session: The session to execute the query.
+        query: The query to retrieve the featured products.
+
+    Returns:
+        A list of dictionaries representing the featured products with their images.
+    """
     result = session.execute(query).all()
 
     # Use defaultdict to organize products with their images

@@ -273,6 +273,17 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
     return query
 
 def get_featured_products(number: int, startindex: int):
+    """
+    Retrieves a list of featured products with additional information.
+    
+    Args:
+        number (int): The number of products to retrieve.
+        startindex (int): The starting index of the products.
+    
+    Returns:
+        sqlalchemy.sql.selectable.Select: The query to retrieve the featured products.
+    """
+    # Create a common table expression (CTE) to rank the featured products
     cte = (
         select(
             FeaturedProduct.product_id,
@@ -282,6 +293,7 @@ def get_featured_products(number: int, startindex: int):
         .alias("ranked_featured")
     )
 
+    # Build the query to retrieve the featured products with additional information
     query = (
         select(
             Product,
