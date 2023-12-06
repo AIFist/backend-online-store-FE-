@@ -3,6 +3,7 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_schemas
 from server.db import product_helper
+from typing import List
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 
@@ -20,6 +21,23 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
     
     data = product_helper.helper_create_product(session=session, product_data=product_data)
     return data
+
+@router.post("/createall", status_code=status.HTTP_201_CREATED)
+async def create_product(products_data: List[product_schemas.ProductCreate] = Body(...)):
+    """
+    Create a new product along with associated images.
+    
+    Parameters:
+    - product_data: Pydantic model containing product details.
+    
+    Returns:
+    - Created Product.
+    """
+    return_list = []
+    for product_data in products_data:
+        data = product_helper.helper_create_product(session=session, product_data=product_data)
+        return_list.append(data)
+    return return_list
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -3,6 +3,7 @@ from sqlalchemy import func, select, select
 from server.models.models import Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
+from typing import List
 
 
 # TODO remove following commented function when you resolve the issue in helper_for_get_one_product
@@ -195,3 +196,6 @@ def helper_create_product(session, product_data: product_schemas.ProductCreate):
         session.close()
 
     return new_product
+# work on this function to get data from user in bulk for product and save it in the database
+def helper_create_products_bulk(session, products_data: List[product_schemas.ProductCreate]):
+    pass
