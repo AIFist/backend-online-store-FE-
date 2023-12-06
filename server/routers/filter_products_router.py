@@ -127,3 +127,27 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     # Get the data using the helper function
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
+
+
+@router.get("/getfeaturedproducts/{number}/{startindex}")
+async def get_featured_product_up_to_given_number(number: int, startindex: int):
+    """
+    Get a list of products with their images up to the specified number.
+
+    Parameters:
+    - number: The maximum number of rows to retrieve.
+    - startindex: The starting index of the rows to retrieve.
+
+    Returns:
+    - List of products with images.
+    """
+    # Get the query to retrieve featured products
+    result = fliter_product_with_reviews_helper.get_featured_products(session = session, number=number, startindex=startindex)
+    
+    # Get the data for the retrieved products
+    # data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
+    
+    # Return the retrieved data
+    # return data
+    # result = session.execute(query).all()
+    return result
