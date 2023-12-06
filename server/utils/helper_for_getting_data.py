@@ -1,4 +1,6 @@
 from fastapi import HTTPException
+from collections import defaultdict
+
 
 
 # function is useless for now and i am adding bresking point here just for reminder 
@@ -119,3 +121,40 @@ def helper_for_getting_data_tranding(session, query):
         for product, image, num_reviews, avg_rating, avg_discount_percent, purchase_count in result
     ]
     return products_with_images_and_reviews
+
+def helper_get_featured_products(session, query):
+    """
+    Retrieves and organizes featured products with their images from the database.
+
+    Args:
+        session: The session to execute the query.
+        query: The query to retrieve the featured products.
+
+    Returns:
+        A list of dictionaries representing the featured products with their images.
+    """
+    result = session.execute(query).all()
+
+    # Use defaultdict to organize products with their images
+    products_dict = defaultdict(lambda: {"Product": None, "ProductImages": [], "num_reviews": 0, "avg_rating": None, "rownum": None})
+
+    for row in result:
+        product_id = row.Product.id
+        if not products_dict[product_id]["Product"]:
+            products_dict[product_id]["Product"] = row.Product
+
+        # Append each image to the ProductImages list
+        products_dict[product_id]["ProductImages"].append({"id": row.ProductImage.id, "product_id": product_id, "image_path": row.ProductImage.image_path})
+
+        # Sum up the reviews and calculate the average rating
+        products_dict[product_id]["num_reviews"] += row.num_reviews
+        if row.avg_rating is not None:
+            products_dict[product_id]["avg_rating"] = row.avg_rating
+
+        # Save the rownum for each product
+        products_dict[product_id]["rownum"] = row.rownum
+
+    # Convert the dictionary values to a list of results
+    final_result = [result for result in products_dict.values()]
+
+    return final_result

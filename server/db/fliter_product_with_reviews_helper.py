@@ -1,7 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy import func, select
-from server.models.models import Product, ProductImage, Review, Sales
+from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
 
@@ -268,5 +268,46 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
         .distinct(Product.id)
     )
 
+
+    return query
+
+def get_featured_products(number: int, startindex: int):
+    """
+    Retrieves a list of featured products with additional information.
+    
+    Args:
+        number (int): The number of products to retrieve.
+        startindex (int): The starting index of the products.
+    
+    Returns:
+        sqlalchemy.sql.selectable.Select: The query to retrieve the featured products.
+    """
+    # Create a common table expression (CTE) to rank the featured products
+    cte = (
+        select(
+            FeaturedProduct.product_id,
+            func.row_number().over().label("rownum")
+        )
+        .select_from(FeaturedProduct)
+        .alias("ranked_featured")
+    )
+
+    # Build the query to retrieve the featured products with additional information
+    query = (
+        select(
+            Product,
+            ProductImage,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            cte.c.rownum
+        )
+        .select_from(Product)
+        .join(cte, Product.id == cte.c.product_id)
+        .outerjoin(ProductImage, Product.id == ProductImage.product_id)
+        .outerjoin(Review, Product.id == Review.product_id)
+        .filter(cte.c.rownum.between(startindex, startindex + number - 1))
+        .group_by(Product, ProductImage, cte.c.rownum)
+        .order_by(cte.c.rownum)
+    )
 
     return query

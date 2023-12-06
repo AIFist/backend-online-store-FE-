@@ -47,6 +47,19 @@ def helper_create_featured_product(session, featured_product: featured_products_
     
 
 def helper_delete_featured_product(session, featured_product_id:int):
+    """
+    Delete a featured product with the given ID.
+
+    Args:
+        session (Session): SQLAlchemy session object.
+        featured_product_id (int): ID of the featured product to delete.
+
+    Returns:
+        Response: FastAPI response with status code 204 if successful.
+
+    Raises:
+        HTTPException: If the product with the given ID does not exist.
+    """
     try:
         # Query the product with the given id
         featured_product_query = session.query(FeaturedProduct).filter(FeaturedProduct.id == featured_product_id)

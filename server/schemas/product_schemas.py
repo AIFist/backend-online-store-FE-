@@ -26,3 +26,7 @@ class ProductUpadte(BaseModel):
     SKU:str
     product_color: str
     category_id: int
+    
+class CreatedProducts(BaseModel):
+    products: List[ProductCreate]
+    

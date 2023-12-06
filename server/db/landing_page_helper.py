@@ -6,6 +6,13 @@ from sqlalchemy import func, select, distinct
 
 
 def get_random_products_helper(number_of_products: int):
+    """
+    Retrieve a random subset of product details.
+    Args:
+        number_of_products: The number of random product details to retrieve.
+    Returns:
+        The query that retrieves the random subset of product details.
+    """
     # Use aliased to create an alias for the Product table
     product_alias = aliased(Product)
 
@@ -38,6 +45,13 @@ def get_random_products_helper(number_of_products: int):
 
 
 def get_top_rated_products_helper(number_of_products: int = 5):
+    """
+    Retrieve top rated products with reviews and discounts.
+    Args:
+        number_of_products (int): Number of products to retrieve. Defaults to 5.
+    Returns:
+        sqlalchemy.sql.selectable.Select: SQLAlchemy select query to retrieve top rated products.
+    """
     # Use aliased to create an alias for the Review table
     review_alias = aliased(Review)
 
@@ -76,6 +90,14 @@ def get_top_rated_products_helper(number_of_products: int = 5):
 
 # purchase_counts_subquery not wokring properly
 def get_trending_product_with_reviews(number_of_products: int):
+    """
+    Retrieves a list of trending products with reviews and discounts.
+    Args:
+        number_of_products (int): The number of products to retrieve.
+    Returns:
+        query: The query object containing the results.
+    """
+
     # Use aliased to create an alias for the Review table
     review_alias = aliased(Review)
 
@@ -124,6 +146,5 @@ def get_trending_product_with_reviews(number_of_products: int):
     .limit(number_of_products)
     
 )
-
 
     return query
