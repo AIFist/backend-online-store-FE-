@@ -4,9 +4,14 @@ from server.models.models1 import session
 from server.models.models import Review
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import reviews_schemas
+from server.db import review_helper
+from typing import List
 router = APIRouter(prefix="/review", tags=["Review  CRUD"])
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=reviews_schemas.CreateReviewResponse
+             )
 async def create_review(product_data: reviews_schemas.CreateReview = Body(...)):
     """
     Create a new review.
@@ -17,20 +22,8 @@ async def create_review(product_data: reviews_schemas.CreateReview = Body(...)):
     Returns:
     - Created Review.
     """
-    try:
-        db_review = Review(**product_data.model_dump())
-        session.add(db_review)
-        session.commit()
-        session.refresh(db_review)
-    except SQLAlchemyError as e:
-        print(f"An error occurred: {e}")
-        session.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred while processing your request. \n most probably product with id {db_review.product_id} does not exist or user with id {db_review.user_id} does not exist.")
-
-    finally:
-        session.close()
-
-    return db_review
+    data = review_helper.helper_create_review(session=session, product_data=product_data)
+    return data
 
 
 @router.put("/{id}", status_code=status.HTTP_201_CREATED)
@@ -45,23 +38,8 @@ async def review_update(id: int, review_update: reviews_schemas.UpdateReview = B
     Returns:
     - Updated Review.
     """
-    try:
-        review_query = session.query(Review).filter(Review.id == id)
-        review= review_query.first()
-        if review is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Review with id {id} does not exist")
-
-        review_query.update(review_update.model_dump(), synchronize_session=False)
-        session.commit()
-    except SQLAlchemyError as e:
-        print(f"An error occurred: {e}")
-        session.rollback()
-
-    finally:
-        session.close()
-
-    return review
+    data = review_helper.helper_review_update(session=session, id=id, review_update=review_update)
+    return data
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(id: int,):
@@ -74,26 +52,14 @@ async def delete_product(id: int,):
     Returns:
     - Response with 204 status code if successful.
     """
-    try:
-        product_query = session.query(Review).filter(Review.id == id)
-        product = product_query.first()
-        if product is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Product Category with id {id} does not exist")
-        
-        product_query.delete(synchronize_session=False)
-        session.commit()
-    
-    except SQLAlchemyError as e:
-            print(f"An error occurred: {e}")
-            session.rollback()  # Rollback the transaction
-
-    finally:
-            session.close()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    data = review_helper.helper_delete_product(session=session, id=id)
+    return data
 
 
-@router.get("/{id}")
+@router.get("/{id}", 
+            status_code=status.HTTP_200_OK,
+            response_model=List[reviews_schemas.GetAllReview]
+            )
 def get_all_review_of_one_product(id: int):
     """
     Get all reviews of a product based on its ID.
@@ -107,20 +73,8 @@ def get_all_review_of_one_product(id: int):
     Raises:
         HTTPException: If the product does not have any review.
     """
-    # Query the database for reviews of the given product ID
-    review_query = session.query(Review).filter(Review.product_id == id)
-    
-    # Get all the reviews
-    reviews = review_query.all()
-    
-    # If there are no reviews, raise an HTTPException with a 404 status code
-    if not reviews:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with id {id} does not have any review"
-        )
-        
-    return reviews
+    data = review_helper.helper_get_all_review_of_one_product(session=session, id=id)
+    return data
 
 
 # TODO add review functions that send review with profduct
