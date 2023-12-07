@@ -25,3 +25,6 @@ class Product(ProductCreateResponse):
 # this class inherite from ProductCreateResponse  class for ProductFavorite data
 class ProductFavoriteGetAll(ProductFavoriteCreateResponse):
     product: Product
+    class Config:
+        from_attributes = True
+ 

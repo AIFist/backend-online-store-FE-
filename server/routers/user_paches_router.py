@@ -3,10 +3,14 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import user_purchases_schemas
 from server.db import  user_purchases_helper
-
+from typing import List
 router = APIRouter(prefix="/user_purchases", tags=["User Purchases CRUD"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+
+@router.post("/create",
+             status_code=status.HTTP_201_CREATED,
+             response_model=user_purchases_schemas.UserPurchasesCreateResponse
+             )
 async def create_user_purchase(
     user_purchase: user_purchases_schemas.UserPurchasesCreate = Body(...)
 ):
@@ -26,7 +30,11 @@ async def create_user_purchase(
     )
     return data
 
-@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+
+@router.put("/{id}",
+            status_code=status.HTTP_201_CREATED,
+            response_model=user_purchases_schemas.UserPurchasesUpdateResponse
+            )
 async def user_purchase_update(id: int, user_purchase_update: user_purchases_schemas.UserPurchasesUpdate = Body(...)):
     """
     Update a user purchase by ID.
@@ -57,7 +65,10 @@ async def delete_user_purchase(id: int):
     data = user_purchases_helper.helper_delete_user_purchase(session=session, id=id)
     return data
 
-@router.get("/{UserId}")
+@router.get("/{UserId}", 
+            status_code=status.HTTP_200_OK,
+            response_model=List[user_purchases_schemas.UserPurchasesGetAll]
+            )
 async def get_all_user_purchase(UserId: int):
     """
     Get all user purchases.
