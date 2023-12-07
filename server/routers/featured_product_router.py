@@ -2,11 +2,14 @@ from fastapi import Body, status
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import featured_products_schemas
-from server.db import    featured_helper
+from server.db import featured_helper
 
 router = APIRouter(prefix="/featured", tags=["featured Product CRUD"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=featured_products_schemas.FeaturedProductCreateResponse
+             )
 async def create_featured_product(
     featured_product: featured_products_schemas.FeaturedProductCreate = Body(...)
 ):
