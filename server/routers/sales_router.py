@@ -6,7 +6,10 @@ from server.db import  sales_helper
 
 router = APIRouter(prefix="/sales", tags=["Product sales CRUD"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=sales_schemas.ProductSalesCreateResponse
+             )
 async def create_product_sales(
     product_sales: sales_schemas.ProductSalesCreate = Body(...)
 ):
@@ -27,7 +30,10 @@ async def create_product_sales(
     return data
 
 
-@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+@router.put("/{id}", 
+            status_code=status.HTTP_201_CREATED,
+            response_model=sales_schemas.ProductSalesUpdateResponse
+            )
 async def product_sales_update(id: int, product_sales_update: sales_schemas.ProdcutSalesUpdate = Body(...)):
     """
     Update a product sales by ID.
