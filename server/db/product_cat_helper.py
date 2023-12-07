@@ -130,7 +130,7 @@ def helper_get_product_category(session):
     categories = session.query(ProductCategory.id, ProductCategory.category_name).all()
     
     # Create a list of tuples with category id and name
-    result = [(category.id, category.category_name) for category in categories]
+    result = [{"id": int(category.id), "category_name": category.category_name} for category in categories]
     if result:
         return result
     else:

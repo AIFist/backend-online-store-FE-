@@ -7,7 +7,9 @@ from typing import List
 
 router = APIRouter(prefix="/product_cat", tags=["Product category CRUD"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=product_cat_schemas.ProductCategoryCreateResponse)
 async def create_product_category(product_category: product_cat_schemas.ProductCategoryCreate = Body(...)):
     """
     Create a new product category.
@@ -22,7 +24,9 @@ async def create_product_category(product_category: product_cat_schemas.ProductC
     return data
 
 
-@router.post("/createall", status_code=status.HTTP_201_CREATED)
+@router.post("/createall",
+             status_code=status.HTTP_201_CREATED,
+             response_model=List[product_cat_schemas.ProductCategoryCreateResponse])
 async def create_product(
     products_category: List[product_cat_schemas.ProductCategoryCreate] = Body(...)):
     """
@@ -63,7 +67,9 @@ async def delete_product_category(id: int):
 
 
 # Update a product category
-@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+@router.put("/{id}", 
+            status_code=status.HTTP_201_CREATED, 
+            response_model= product_cat_schemas.ProductCategoryUpdateResponse)
 async def update_product_category(id: int, productcat_update: product_cat_schemas.ProductCategoryUpdate = Body(...)):
     """
     Update a product category by ID.
@@ -80,7 +86,8 @@ async def update_product_category(id: int, productcat_update: product_cat_schema
 
 
 # Get all product categories with their IDs and names
-@router.get("/all")
+@router.get("/all", 
+            response_model=List[product_cat_schemas.ProductCategoryGetALLResponse])
 async def get_product_category():
     """
     Get all product categories with their IDs and names.
@@ -95,7 +102,7 @@ async def get_product_category():
     return data
 
 # Get a specific product category by ID
-@router.get("/{id}")
+@router.get("/{id}", response_model=product_cat_schemas.ProductCategoryGetResponse)
 async def get_one_product_category(id: int):
     """
     Retrieve a specific product category by ID.
