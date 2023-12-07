@@ -7,7 +7,10 @@ from typing import List
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create",
+             status_code=status.HTTP_201_CREATED, 
+             response_model=product_schemas.ProductCreateResponse
+             )
 async def create_product(product_data: product_schemas.ProductCreate = Body(...)):
     """
     Create a new product along with associated images.
@@ -22,7 +25,10 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
     data = product_helper.helper_create_product(session=session, product_data=product_data)
     return data
 
-@router.post("/createall", status_code=status.HTTP_201_CREATED)
+
+@router.post("/createall", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=List[product_schemas.ProductCreateResponse])
 async def create_product(products_data: List[product_schemas.ProductCreate] = Body(...)):
     """
     Create a new product along with associated images.
@@ -56,7 +62,10 @@ async def delete_product(id: int):
 
 
 # Update a product 
-@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+@router.put("/{id}", 
+            status_code=status.HTTP_201_CREATED,
+            response_model=product_schemas.ProductUpadteResponse
+            )
 async def update_product(id: int, product_update: product_schemas.ProductUpadte = Body(...)):
     """
     Update a product by ID.
@@ -72,7 +81,10 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     return updated_product
 
 
-@router.get("/{id}")
+@router.get("/{id}", 
+            status_code=status.HTTP_200_OK,
+            response_model=product_schemas.ProductGetResponse
+            )
 async def get_one_product(id: int):
     """
     Get a single product with its images based on the provided product ID.
