@@ -3,10 +3,13 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import favorites_schemas
 from server.db import  favorites_helper
-
+from typing import List
 router = APIRouter(prefix="/favorites", tags=["Product favorite CRUD"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create",
+             status_code=status.HTTP_201_CREATED,
+             response_model=favorites_schemas.ProductFavoriteCreateResponse
+             )
 async def create_product_favorite(
     product_favorite: favorites_schemas.ProductFavoriteCreate = Body(...)
 ):
@@ -40,7 +43,9 @@ async def delete_product_favorite(id: int):
     data = favorites_helper.helper_delete_product_favorite(session=session, id=id)
     return data
 
-@router.get("/{UserId}")
+@router.get("/{UserId}",status_code=status.HTTP_200_OK,
+            response_model=List[favorites_schemas.ProductFavoriteGetAll]
+            )
 async def get_all_product_favorite(UserId: int):
     """
     Get all product favorites.
