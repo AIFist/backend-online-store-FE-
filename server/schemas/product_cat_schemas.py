@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+
+
 class ProductCategoryCreate(BaseModel):
     category_name: str
     parent_category_id: Optional[int]

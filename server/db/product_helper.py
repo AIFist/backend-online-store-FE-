@@ -160,6 +160,44 @@ def helper_for_deleting_product(session, id:int):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+# def helper_create_product(session, product_data: product_schemas.ProductCreate):
+#     """
+#     Creates a new product in the database.
+#     Args:
+#         session: SQLAlchemy session object.
+#         product_data: ProductCreate object containing the data for the new product.
+#     Returns:
+#         The newly created product.
+#     Raises:
+#         HTTPException: If there is a foreign key constraint violation or other unprocessable entity error.
+#     """
+#     try:
+#         # Convert the Pydantic model to a SQLAlchemy model
+#         new_product = Product(**product_data.model_dump(exclude={"images"}))
+
+#         # Create product images and associate with the product
+#         for image_data in product_data.images:
+#             image = ProductImage(**image_data.model_dump())
+#             new_product.images.append(image)
+
+#         # Add the product to the session and commit
+#         session.add(new_product)
+#         session.commit()
+#         session.refresh(new_product)
+#     except SQLAlchemyError as e:
+#         print(f"An error occurred: {e}")
+#         session.rollback()  # Rollback the transaction
+#         raise HTTPException(
+#             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#             detail="Foreign key constraint violation or other unprocessable entity error",
+#         )
+
+#     finally:
+#         session.close()
+
+#     return new_product
+
+
 def helper_create_product(session, product_data: product_schemas.ProductCreate):
     """
     Creates a new product in the database.
@@ -167,7 +205,7 @@ def helper_create_product(session, product_data: product_schemas.ProductCreate):
         session: SQLAlchemy session object.
         product_data: ProductCreate object containing the data for the new product.
     Returns:
-        The newly created product.
+        The newly created product with image URLs.
     Raises:
         HTTPException: If there is a foreign key constraint violation or other unprocessable entity error.
     """
@@ -176,9 +214,11 @@ def helper_create_product(session, product_data: product_schemas.ProductCreate):
         new_product = Product(**product_data.model_dump(exclude={"images"}))
 
         # Create product images and associate with the product
+        image_urls = []  # List to store image URLs
         for image_data in product_data.images:
             image = ProductImage(**image_data.model_dump())
             new_product.images.append(image)
+            image_urls.append(image.image_path)  # Assuming there is an image_url attribute
 
         # Add the product to the session and commit
         session.add(new_product)
@@ -195,4 +235,20 @@ def helper_create_product(session, product_data: product_schemas.ProductCreate):
     finally:
         session.close()
 
-    return new_product
+    # Construct a dictionary representation of the new product with image URLs
+    result = {
+        "id": new_product.id,
+        "product_name": new_product.product_name,
+        "description": new_product.description,
+        "price": new_product.price,
+        "stock_quantity": new_product.stock_quantity,
+        "product_size": new_product.product_size,
+        "target_audience": new_product.target_audience,
+        "SKU": new_product.SKU,
+        "product_color": new_product.product_color,
+        "category_id": new_product.category_id,
+        "created_at": new_product.created_at,
+        "images": image_urls,
+    }
+
+    return result
