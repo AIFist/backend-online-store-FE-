@@ -2,7 +2,7 @@ from fastapi import Body, status
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import featured_products_schemas
-from server.db import    featured_helper
+from server.db import featured_helper
 
 router = APIRouter(prefix="/featured", tags=["featured Product CRUD"])
 
