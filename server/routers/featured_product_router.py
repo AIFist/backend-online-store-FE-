@@ -6,7 +6,10 @@ from server.db import    featured_helper
 
 router = APIRouter(prefix="/featured", tags=["featured Product CRUD"])
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=featured_products_schemas.FeaturedProductCreateResponse
+             )
 async def create_featured_product(
     featured_product: featured_products_schemas.FeaturedProductCreate = Body(...)
 ):
