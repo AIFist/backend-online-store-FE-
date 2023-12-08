@@ -2,12 +2,17 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.db import fliter_product_with_reviews_helper
 from server.utils import helper_for_getting_data
-
+from typing import List
+from fastapi import  status
+from server.schemas import filter_products_schemas
 
 router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints"])
 
 
-@router.get("/getbyname/{product_name}/{number}/{startindex}")
+@router.get("/getbyname/{product_name}/{number}/{startindex}", 
+            status_code=status.HTTP_200_OK,
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
 async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product name.
@@ -26,7 +31,10 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     return data
 
 
-@router.get("/getproducts/{number}/{startindex}")
+@router.get("/getproducts/{number}/{startindex}",
+            status_code=status.HTTP_200_OK,
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
 async def get_product_up_to_given_number(number: int, startindex: int):
     """
     Get a list of products with their images up to the specified number.
