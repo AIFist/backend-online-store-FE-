@@ -28,6 +28,7 @@ def get_random_products(number_of_products):
     return data
 
 
+# need to change the the way it retrun the result
 @router.get("/gettrendingproducts/{number_of_products}")
 def get_trending_products_with_reviews(number_of_products):
     """
@@ -44,7 +45,10 @@ def get_trending_products_with_reviews(number_of_products):
     return result
 
 
-@router.get("/gettopratedproducts/{number_of_products}")
+@router.get("/gettopratedproducts/{number_of_products}",
+            status_code=status.HTTP_200_OK,
+            response_model=List[landing_page_schemas.LandingPageProductCResponse]
+            )
 def get_top_rated_products(number_of_products: int):
     """
     Get the top rated products.
