@@ -100,7 +100,10 @@ async def get_product_by_keyword(category_id: int, search_keyword: str, number: 
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
-@router.get("/searchbyproductsize/{product_size}/{number}/{startindex}")
+@router.get("/searchbyproductsize/{product_size}/{number}/{startindex}",
+            status_code=status.HTTP_200_OK,
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
 def get_product_by_size(product_size: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product size.
@@ -120,7 +123,10 @@ def get_product_by_size(product_size: str, number: int, startindex: int):
     return data
 
 
-@router.get("/filterbyprice/{min_price}/{max_price}/{number}/{product_name}/{startindex}")
+@router.get("/filterbyprice/{min_price}/{max_price}/{number}/{product_name}/{startindex}",
+            status_code=status.HTTP_200_OK,
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
 def filter_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """
     Get multiple products with their images based on the provided price range and product name.
@@ -142,8 +148,11 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
-
-@router.get("/getfeaturedproducts/{number}/{startindex}")
+# Get featured products need responde model
+@router.get("/getfeaturedproducts/{number}/{startindex}",
+            status_code=status.HTTP_200_OK,
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
 async def get_featured_product_up_to_given_number(number: int, startindex: int):
     """
     Get a list of products with their images up to the specified number.
