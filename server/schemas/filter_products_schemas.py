@@ -2,11 +2,11 @@
 from server.schemas.product_schemas import ProductCreateResponse,ProductImageCreate
 from typing import List, Optional
 
-class LandingPageProductImage(ProductImageCreate):
+class FilterProductsProductImage(ProductImageCreate):
     id: int
 
-class LandingPageProductCResponse(ProductCreateResponse):
-    images: List[LandingPageProductImage]
+class FilterProductsProductCResponse(ProductCreateResponse):
+    images: List[FilterProductsProductImage]
     num_reviews: int
     avg_rating: Optional[float] | None
     avg_discount_percent: Optional[float] | None
