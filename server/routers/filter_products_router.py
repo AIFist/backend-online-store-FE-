@@ -76,7 +76,10 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
     return data
 
 
-@router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}")
+@router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}", 
+            status_code= status.HTTP_200_OK,
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
 async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Get a list of products with their images based on the provided product category and search keyword.
