@@ -2,10 +2,16 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.db import landing_page_helper 
 from server.utils import helper_for_getting_data
+from server.schemas import landing_page_schemas
+from typing import List
+from fastapi import  status
 
 router = APIRouter(prefix="/landingpage", tags=["landing page Endpoints"])
 
-@router.get("/getrandomproducts/{number_of_products}")
+@router.get("/getrandomproducts/{number_of_products}",
+            status_code=status.HTTP_200_OK,
+            response_model=List[landing_page_schemas.LandingPageProductCResponse]
+            )
 def get_random_products(number_of_products):
     """
     Get a random subset of products for the landing page.
