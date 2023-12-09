@@ -35,6 +35,9 @@ def get_random_products(number_of_products):
             )
 def get_trending_products_with_reviews(number_of_products):
     """
+    Note: This endpoint returns different data from the other endpoints.
+    and there is issue in this endpoint which is for some reason it just return one images object
+
     This endpoint is in progress.
 
     Args:
