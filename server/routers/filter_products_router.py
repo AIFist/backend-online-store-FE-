@@ -155,6 +155,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
             )
 async def get_featured_product_up_to_given_number(number: int, startindex: int):
     """
+    Note: This endpoint returns different data from the other endpoints.
     Get a list of products with their images up to the specified number.
 
     Parameters:
