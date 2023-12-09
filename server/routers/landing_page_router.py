@@ -29,7 +29,10 @@ def get_random_products(number_of_products):
 
 
 # need to change the the way it retrun the result
-@router.get("/gettrendingproducts/{number_of_products}")
+@router.get("/gettrendingproducts/{number_of_products}", 
+            status_code=status.HTTP_200_OK,
+            response_model=List[landing_page_schemas.LandingPageUpToGivenNumberResponse]
+            )
 def get_trending_products_with_reviews(number_of_products):
     """
     This endpoint is in progress.
@@ -38,7 +41,7 @@ def get_trending_products_with_reviews(number_of_products):
         number_of_products (_type_): _description_
     """
     query = landing_page_helper.get_trending_product_with_reviews(number_of_products=number_of_products)
-
+    
     # data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     # return data
     result = session.execute(query).all()
