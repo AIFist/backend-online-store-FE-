@@ -151,7 +151,7 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
 # Get featured products need responde model
 @router.get("/getfeaturedproducts/{number}/{startindex}",
             status_code=status.HTTP_200_OK,
-            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.FeaturedProductUpToGivenNumberResponse]
             )
 async def get_featured_product_up_to_given_number(number: int, startindex: int):
     """
