@@ -3,7 +3,6 @@ from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_image_schemas
 from server.db import product_image_helper
-from typing import List
 
 router = APIRouter(prefix="/Product Images", tags=["Product Images CRUD"])
 
