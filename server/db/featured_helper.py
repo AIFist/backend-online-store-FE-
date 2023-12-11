@@ -1,6 +1,6 @@
 from server.schemas import featured_products_schemas
 from sqlalchemy.exc import SQLAlchemyError
-from server.models.models import FeaturedProduct, Product, ProductImage
+from server.models.models import FeaturedProduct
 from fastapi import status,HTTPException, Response
 
 

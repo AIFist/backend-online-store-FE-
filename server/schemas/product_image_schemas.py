@@ -7,3 +7,9 @@ class ProductImageCreate(BaseModel):
 
 class ProductImageCreateResponse(ProductImageCreate):
     id: int
+    
+class ProductImageUpdate(ProductImageCreate):
+    pass
+
+class ProductImageUpdateResponse(ProductImageCreateResponse):
+    pass
