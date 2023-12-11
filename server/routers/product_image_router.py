@@ -37,4 +37,21 @@ async def delete_product_image(id: int):
         HTTPException: If the product image with the given ID does not exist.
     """
     return product_image_helper.helper_delete_product_image(session=session, id=id)
-    
+
+
+@router.put("/{id}", response_model=product_image_schemas.ProductImageUpdateResponse)
+async def update_product_image(id: int, product_image: product_image_schemas.ProductImageUpdate = Body(...)):
+    """
+    Update a product image in the database.
+
+    Args:
+        id (int): ID of the product image to update.
+        product_image (ProductImageUpdate): Object containing the updated data.
+
+    Returns:
+        ProductImage: The updated product image.
+
+    Raises:
+        HTTPException: If the product image does not exist.
+    """
+    return product_image_helper.helper_update_product_image(session=session, id=id, product_image=product_image)
