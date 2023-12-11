@@ -9,7 +9,7 @@ class ProductImageCreate(BaseModel):
 class ProductCreate(BaseModel):
     product_name: str
     description: str
-    price: int
+    price: float
     stock_quantity: int
     product_size: str
     target_audience: str
@@ -22,7 +22,7 @@ class ProductCreate(BaseModel):
 class ProductUpadte(BaseModel):
     product_name: str
     description: str
-    price: int
+    price: float
     stock_quantity: int
     product_size: str
     target_audience: str
