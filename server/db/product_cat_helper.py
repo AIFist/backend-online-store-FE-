@@ -1,5 +1,4 @@
-from fastapi import Body, status,HTTPException, Response
-from fastapi.routing import APIRouter
+from fastapi import status,HTTPException, Response
 from server.models.models import ProductCategory
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_cat_schemas
