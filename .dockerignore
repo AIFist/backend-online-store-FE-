@@ -1,0 +1,11 @@
+# flyctl launch added from .gitignore
+**/server/.env
+**/server/__pycache__
+**/server/schemas/__pycache__
+**/server/models/__pycache__
+**/server/utils/__pycache__
+**/server/db/__pycache__
+**/server/routers/__pycache__
+**/alembic/__pycache__
+**/alembic/versions/__pycache__
+fly.toml
