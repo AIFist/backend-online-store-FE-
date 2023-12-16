@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
+from server.schemas.product_schemas import ProductCreate, ProductImageGet
+from typing import List
 
 class ProductCartCreate(BaseModel):
     user_id: int
@@ -18,5 +20,14 @@ class ProductCartCreateResponse(ProductCartCreate):
 class ProductCartUpdateResponse(ProductCartCreateResponse):
     pass
 
+class ProductCartGetResponseImage(ProductImageGet):
+    product_id:int
+
+
+class ProductCartGetResponseProduct(ProductCreate):
+     images: List[ProductCartGetResponseImage]
+
+
+
 class ProductCartGetResponse(ProductCartCreateResponse):
-    pass
+    product : ProductCartGetResponseProduct

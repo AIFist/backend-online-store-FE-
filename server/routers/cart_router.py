@@ -67,6 +67,8 @@ async def delete_product_cart(id: int):
     return data
 
 
+
+ # this endpoint should all product with prodect data
 @router.get("/allproduct/{UserId}",
             status_code=status.HTTP_200_OK,
             response_model=List[cart_schemas.ProductCartGetResponse]
@@ -82,6 +84,6 @@ async def get_all_product_cart(UserId: int):
         data: The cart data for the user.
     """
     # Retrieve all products in the cart for the given user
-    data = cart_helper.get_all_product_cart(session=session, UserId=UserId)
+    data = cart_helper.get_all_product_for_cart(session=session, UserId=UserId)
     
     return data
