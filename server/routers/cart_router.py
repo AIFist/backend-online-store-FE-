@@ -71,7 +71,7 @@ async def delete_product_cart(id: int):
  # this endpoint should all product with prodect data
 @router.get("/allproduct/{UserId}",
             status_code=status.HTTP_200_OK,
-            # response_model=List[cart_schemas.ProductCartGetResponse]
+            response_model=List[cart_schemas.ProductCartGetResponse]
             )
 async def get_all_product_cart(UserId: int):
     """
