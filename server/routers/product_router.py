@@ -81,11 +81,11 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     return updated_product
 
 
-@router.get("/{id}", 
+@router.get("/{product_id}", 
             status_code=status.HTTP_200_OK,
-            response_model=product_schemas.ProductGetResponse
+            response_model=product_schemas.ProductGetResponseAdvance
             )
-async def get_one_product(id: int):
+async def get_one_product(product_id: int):
     """
     Get a single product with its images based on the provided product ID.
 
@@ -96,6 +96,7 @@ async def get_one_product(id: int):
     - Product with images.
     """
     # Get the product with the given id but image it gets one image at a time and this issue needs to be fixed
-    data = product_helper.helper_for_get_one_product(session= session, id=id)
-    return data
+    query= product_helper.get_product_by_id(product_id=product_id)
+    results = session.execute(query).first()
+    return results
     

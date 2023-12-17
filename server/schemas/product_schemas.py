@@ -1,5 +1,5 @@
 from pydantic import BaseModel , EmailStr
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 class ProductImageCreate(BaseModel):
@@ -59,3 +59,10 @@ class ProductGetResponse(ProductCreate):
     images: List[ProductImageGet]
     class Config:
         from_attributes = True
+        
+class ProductGetResponseAdvance(BaseModel):
+    Product : ProductGetResponse
+    num_reviews: int
+    avg_rating: Optional[float] | None
+    discount_percent: Optional[float] | None
+    
