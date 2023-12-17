@@ -22,7 +22,7 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
     # Generate an access token using the oauth2 library, passing the user_id as data
-    access_token = oauth2.create_access_token(data={"user_id": user.id})
+    access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role})
 
     # Return the access token and the token type as a dictionary
     return {"access_token": access_token, "token_type": "bearer"}
