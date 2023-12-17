@@ -77,7 +77,7 @@ def helper_for_filters_with_review_and_discount(session, query):
             "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
             "num_reviews": num_reviews,
             "avg_rating": avg_rating,
-            "avg_discount_percent": avg_discount_percent,
+            "discount_percent": avg_discount_percent,
         }
         for product, image, num_reviews, avg_rating, avg_discount_percent in result
     ]
@@ -115,7 +115,7 @@ def helper_for_getting_data_tranding(session, query):
             "images": [{"id": image.id, "image_path": image.image_path} for image in product.images],
             "num_reviews": num_reviews,
             "avg_rating": avg_rating,
-            "avg_discount_percent": avg_discount_percent,
+            "discount_percent": avg_discount_percent,
             "purchase_count": purchase_count  # Include the purchase count in the result
         }
         for product, image, num_reviews, avg_rating, avg_discount_percent, purchase_count in result

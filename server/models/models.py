@@ -13,6 +13,7 @@ class User(Base):
     username = Column(String)
     email = Column(String)
     password = Column(String)
+    role = Column(String, nullable=True)
     billing_address = Column(String,nullable=True)
     shipping_address = Column(String,nullable=True)
     created_at = Column(TIMESTAMP(timezone=True),
