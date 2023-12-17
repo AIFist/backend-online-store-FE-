@@ -13,7 +13,7 @@ class LandingPageProductCResponse(ProductCreateResponse):
     images: List[LandingPageProductImage]
     num_reviews: int
     avg_rating: Optional[float] | None
-    avg_discount_percent: Optional[float] | None
+    discount_percent: Optional[float] | None
     
 class LandingPageUpToGivenNumberImageResponse(LandingPageProductImage):
     product_id : int
@@ -27,6 +27,6 @@ class LandingPageUpToGivenNumberResponse(BaseModel):
     ProductImage: LandingPageUpToGivenNumberImageResponse
     num_reviews: int
     avg_rating: Optional[float] | None
-    latest_discount_percent: Optional[float] | None
+    discount_percent: Optional[float] | None
     purchase_count: Optional[int]| None
 

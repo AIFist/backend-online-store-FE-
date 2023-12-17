@@ -170,4 +170,5 @@ async def get_featured_product_up_to_given_number(number: int, startindex: int):
 
     # Get the data using the helper function
     result =helper_for_getting_data.helper_get_featured_products(session= session, query=query)
+    # result = session.execute(query).all()
     return result

@@ -1,8 +1,9 @@
 from fastapi import HTTPException, status,Response
 from sqlalchemy import func, select, select
-from server.models.models import Product, ProductImage
+from server.models.models import Product, ProductImage, Sales, Review
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
+from sqlalchemy import or_, and_
 
 
 def helper_for_get_one_product(session, id: int):
@@ -177,3 +178,50 @@ def helper_create_product(session, product_data: product_schemas.ProductCreate):
     }
 
     return result
+
+
+from sqlalchemy.orm import joinedload
+
+def get_product_by_id(product_id: int):
+    """
+    Retrieves data for a specific product identified by the given product ID.
+
+    Args:
+        product_id (int): The ID of the product to retrieve.
+
+    Returns:
+        A query object that can be executed to retrieve the product and its data.
+    """
+    # Create the subquery to get the latest discount percent for the product
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .where(Sales.product_id == product_id)
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
+    # Build the query to retrieve the product and its data, including all images
+    query = (
+        select(
+            Product,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("discount_percent"),
+            # ProductImage
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .filter(Product.id == product_id)
+        .options(joinedload(Product.images))  # Use joinedload to eagerly load images
+        .group_by(Product, Sales.discount_percent, ProductImage)
+        .order_by(Product.id)
+        .distinct(Product.id, ProductImage.id)
+    )
+
+    return query
+

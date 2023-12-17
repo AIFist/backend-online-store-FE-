@@ -126,7 +126,7 @@ def get_trending_product_with_reviews(number_of_products: int):
         ProductImage,
         review_info_subquery.c.num_reviews.label("num_reviews"),
         review_info_subquery.c.avg_rating.label("avg_rating"),
-        Sales.discount_percent.label("latest_discount_percent"),
+        Sales.discount_percent.label("discount_percent"),
         purchase_counts_subquery.c.purchase_count.label("purchase_count")
     ])
     .select_from(Product)
