@@ -29,7 +29,7 @@ class FeaturedProductUpToGivenNumberResponse(BaseModel):
     ProductImages: List[FeaturedProductUpToGivenNumberImage]
     num_reviews: int
     avg_rating: Optional[float] | None
-    # avg_discount_percent: Optional[float] | None
+    discount_percent: Optional[float] | None
     class Config:
         from_attributes = True
 

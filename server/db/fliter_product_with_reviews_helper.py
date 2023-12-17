@@ -274,11 +274,11 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
 def get_featured_products(number: int, startindex: int):
     """
     Retrieves a list of featured products with additional information.
-    
+
     Args:
         number (int): The number of products to retrieve.
         startindex (int): The starting index of the products.
-    
+
     Returns:
         sqlalchemy.sql.selectable.Select: The query to retrieve the featured products.
     """
@@ -292,6 +292,16 @@ def get_featured_products(number: int, startindex: int):
         .alias("ranked_featured")
     )
 
+    # Create a subquery to get the latest discount percent for each product
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
     # Build the query to retrieve the featured products with additional information
     query = (
         select(
@@ -299,14 +309,17 @@ def get_featured_products(number: int, startindex: int):
             ProductImage,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
-            cte.c.rownum
+            cte.c.rownum,
+            Sales.discount_percent.label("latest_discount_percent")
         )
         .select_from(Product)
         .join(cte, Product.id == cte.c.product_id)
         .outerjoin(ProductImage, Product.id == ProductImage.product_id)
         .outerjoin(Review, Product.id == Review.product_id)
+        .outerjoin(subquery, Product.id == subquery.c.product_id)
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
         .filter(cte.c.rownum.between(startindex, startindex + number - 1))
-        .group_by(Product, ProductImage, cte.c.rownum)
+        .group_by(Product, ProductImage, cte.c.rownum, Sales.discount_percent)
         .order_by(cte.c.rownum)
     )
 
