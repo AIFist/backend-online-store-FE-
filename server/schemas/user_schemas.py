@@ -19,5 +19,6 @@ class AuthUser(BaseModel):
 class UpdateUser(BaseModel):
     email : EmailStr
     username : str
+    role:str =Field(default="user")
     billing_address: Optional[str] | None
     shipping_address: Optional[str] | None
