@@ -13,6 +13,7 @@ from server.routers import (
     landing_page_router,
     featured_product_router,
     product_image_router,
+    auth_router,
     
 )
 
@@ -27,6 +28,7 @@ app.add_middleware(
 )
  
 app.include_router(user_router.router)
+app.include_router(auth_router.router)
 app.include_router(product_catogory_router.router)
 app.include_router(product_router.router)
 app.include_router(filter_products_router.router)
