@@ -1,4 +1,4 @@
-from pydantic import BaseModel , EmailStr
+from pydantic import BaseModel , EmailStr,Field
 from typing import Optional
 
 class GetUser(BaseModel):
@@ -6,6 +6,7 @@ class GetUser(BaseModel):
     username: str
     email :EmailStr
     password: str
+    role:str =Field(default="user")
     billing_address: Optional[str] | None
     shipping_address:  Optional[str] | None
 
