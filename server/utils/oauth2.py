@@ -7,12 +7,13 @@ from dotenv import load_dotenv
 from server.schemas import token_schemas
 from server.models.models1 import session as db
 from server.models.models import User
+
+
+# following code is for debugging
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 import os
 load_dotenv()
-
-
-DB_URL: str = os.getenv("DB")
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 # secret key
@@ -36,13 +37,17 @@ def verify_access_token(token: str, credentials_exeception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id: str = payload.get("user_id")
-        role: str = payload.get("role")
-        print(role)
+        id = str(id)
         if id is None:
+            print(" Id error ")
             raise credentials_exeception
 
+
         token_data = token_schemas.TokenData(id=id)
-    except (jwt.JWTError, ValidationError):
+    except (jwt.JWTError, ValidationError) as e:
+         # following comment is for debugging
+        # print("JWT error ")
+        # logging.exception("Error during JWT processing or validation: %s", str(e))
         raise credentials_exeception
 
     return token_data
