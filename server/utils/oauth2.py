@@ -37,6 +37,8 @@ def verify_access_token(token: str, credentials_exeception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id: str = payload.get("user_id")
+        role : str = payload.get("role")
+       
         id = str(id)
         if id is None:
             print(" Id error ")
