@@ -1,8 +1,9 @@
-from fastapi import Body, status
+from fastapi import Body, status,Depends, HTTPException
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import favorites_schemas
 from server.db import  favorites_helper
+from server.utils import oauth2
 from typing import List
 router = APIRouter(prefix="/favorites", tags=["Product favorite CRUD"])
 
@@ -11,7 +12,8 @@ router = APIRouter(prefix="/favorites", tags=["Product favorite CRUD"])
              response_model=favorites_schemas.ProductFavoriteCreateResponse
              )
 async def create_product_favorite(
-    product_favorite: favorites_schemas.ProductFavoriteCreate = Body(...)
+    product_favorite: favorites_schemas.ProductFavoriteCreate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
 ):
     """
     Creates a new product favorite.
@@ -22,6 +24,12 @@ async def create_product_favorite(
     Returns:
         The created product favorite data.
     """
+    print(current_user.id, current_user.role)
+    if current_user.id != product_favorite.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform requested action",
+        )
 
     # Create the product favorite in the database
     data = favorites_helper.helper_create_product_favorite(
