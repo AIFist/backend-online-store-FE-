@@ -22,7 +22,7 @@ async def create_product_favorite(
     Creates a new product favorite.
 
     Args:
-        product_favorite (favorites_schemas.ProductFavoriteCreate): The product favorite data.
+        sub_product_favorite (favorites_schemas.ProductFavoriteSubCreate): The data for creating a product favorite.
         current_user (int): The ID of the current user.
 
     Returns:
@@ -31,11 +31,14 @@ async def create_product_favorite(
     Raises:
         HTTPException: If the current user is not authorized to perform the requested action.
     """
+    # Prepare the data for creating the product favorite
     update_data = {
         "user_id": current_user.id,
         "product_id": sub_product_favorite.product_id
     }
+
     try:
+        # Validate the data for creating the product favorite
         product_favorite = favorites_schemas.ProductFavoriteCreate.model_validate(update_data)
     except ValueError as e:
         print(f"An error occurred: {e}")
@@ -44,7 +47,9 @@ async def create_product_favorite(
     data = favorites_helper.helper_create_product_favorite(
         session=session, product_favorite=product_favorite
     )
+
     return data
+
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product_favorite(
@@ -84,10 +89,13 @@ async def delete_product_favorite(
             )
 async def get_all_product_favorite(current_user: int = Depends(oauth2.get_current_user)):
     """
-    Get all product favorites.
-
+    Get all product favorites for the current user.
+    
+    Args:
+        current_user (int): The ID of the current user.
+        
     Returns:
-    - A list of product favorites.
+        List[favorites_schemas.ProductFavoriteGetAll]: A list of product favorites.
     """
     UserId = current_user.id
     data = favorites_helper.helper_get_all_product_favorite(session=session,UserId=UserId)
