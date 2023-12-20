@@ -65,10 +65,10 @@ async def product_cart_update(
     - The updated product cart.
     """
     product_cart_query = session.query(Cart).filter(Cart.id == id)
-    product_review = product_cart_query.first()
+    product_cart= product_cart_query.first()
 
     # Check if the current user is authorized to update the review
-    if current_user.id != product_review.user_id:
+    if current_user.id != product_cart.user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to perform requested action",
@@ -80,7 +80,10 @@ async def product_cart_update(
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product_cart(id: int):
+async def delete_product_cart(
+    id: int,
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Delete a product cart by ID.
 
@@ -90,6 +93,15 @@ async def delete_product_cart(id: int):
     Returns:
     - The deleted product cart.
     """
+    product_cart_query = session.query(Cart).filter(Cart.id == id)
+    product_cart = product_cart_query.first()
+
+    # Check if the current user is authorized to update the review
+    if current_user.id != product_cart.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform requested action",
+        )
     data = cart_helper.delete_product_cart(session=session, id=id)
     return data
 
