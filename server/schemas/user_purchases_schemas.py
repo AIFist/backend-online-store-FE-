@@ -3,10 +3,12 @@ from datetime import datetime
 from typing import List
 from server.schemas.product_schemas import ProductCreateResponse,ProductImageCreate
 
-class UserPurchasesCreate(BaseModel):
-    user_id: int
+class SubUserPurchasesCreate(BaseModel):
     product_id: int
     status: str = Field(default="pending")
+class UserPurchasesCreate(SubUserPurchasesCreate):
+    user_id: int
+    
 
 
 class  UserPurchasesUpdate(BaseModel):

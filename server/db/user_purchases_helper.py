@@ -167,3 +167,18 @@ def helper_get_all_user_purchases(session, UserId:int):
         session.close()
 
     return userPurchase
+
+
+def helper_get_all_user_purchases_for_given_number(session, startindex: int, number: int):
+    """
+    Get user purchases from the database within a specified range.
+
+    Args:
+        session: The SQLAlchemy session object.
+        startindex: The starting index for fetching user purchases.
+        number: The number of user purchases to retrieve.
+
+    Returns:
+        A list of user purchases within the specified range.
+    """
+    pass

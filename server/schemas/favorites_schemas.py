@@ -2,8 +2,13 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 from server.schemas.product_schemas import ProductCreateResponse,ProductImageCreate
-class ProductFavoriteCreate(BaseModel):
+
+
+class ProductFavoriteSubCreate(BaseModel):
     product_id: int
+
+
+class ProductFavoriteCreate(ProductFavoriteSubCreate):
     user_id: int
 
 
