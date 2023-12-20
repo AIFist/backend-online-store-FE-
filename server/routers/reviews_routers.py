@@ -1,8 +1,9 @@
-from fastapi import Body, status
+from fastapi import Body, status, Depends
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import reviews_schemas
 from server.db import review_helper
+from server.utils import oauth2
 from typing import List
 router = APIRouter(prefix="/review", tags=["Review  CRUD"])
 
@@ -10,7 +11,9 @@ router = APIRouter(prefix="/review", tags=["Review  CRUD"])
              status_code=status.HTTP_201_CREATED,
              response_model=reviews_schemas.CreateReviewResponse
              )
-async def create_review(product_data: reviews_schemas.CreateReview = Body(...)):
+async def create_review(
+    sub_product_data: reviews_schemas.SubCreateReview = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),):
     """
     Create a new review.
 
@@ -20,6 +23,17 @@ async def create_review(product_data: reviews_schemas.CreateReview = Body(...)):
     Returns:
     - Created Review.
     """
+    product_data = {
+        "user_id": current_user.id,
+        "product_id": sub_product_data.product_id,
+        "rating": sub_product_data.rating,
+        "comment": sub_product_data.comment
+    }
+    try:
+        product_data = reviews_schemas.CreateReview.model_validate(product_data)
+    except ValueError as e:
+        print(f"An error occurred: {e}")
+    
     data = review_helper.helper_create_review(session=session, product_data=product_data)
     return data
 

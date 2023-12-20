@@ -1,10 +1,14 @@
 from pydantic import BaseModel
 from datetime import datetime
-class CreateReview(BaseModel):
+
+
+class SubCreateReview(BaseModel):
     product_id: int
-    user_id: int
     rating: int
     comment: str
+class CreateReview(SubCreateReview):
+    user_id: int
+    
 
 
 class UpdateReview(BaseModel):
