@@ -1,18 +1,21 @@
-from fastapi import Body, status
+from fastapi import Body, status, Depends
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import user_purchases_schemas
 from server.db import  user_purchases_helper
 from typing import List
+from server.models.models import UserPurchase
+from server.utils import oauth2
 router = APIRouter(prefix="/user_purchases", tags=["User Purchases CRUD"])
 
 
 @router.post("/create",
              status_code=status.HTTP_201_CREATED,
-             response_model=user_purchases_schemas.UserPurchasesCreateResponse
+             response_model=user_purchases_schemas.SubUserPurchasesCreate
              )
 async def create_user_purchase(
-    user_purchase: user_purchases_schemas.UserPurchasesCreate = Body(...)
+    sub_user_purchase: user_purchases_schemas.SubUserPurchasesCreate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
 ):
     """
     Creates a new user purchase.
@@ -23,7 +26,17 @@ async def create_user_purchase(
     Returns:
         The created user purchase data.
     """
-
+    user_purchase = {
+        "user_id": current_user.id,
+        "product_id": sub_user_purchase.product_id,
+        "status": sub_user_purchase.status
+    }
+    try:
+        # Validate the data for creating the user purchase
+        user_purchase = user_purchases_schemas.UserPurchasesCreate.model_validate(user_purchase)
+        
+    except ValueError as e:
+        print(f"An error occurred: {e}")
     # Create the user purchase in the database
     data = user_purchases_helper.helper_create_user_purchase(
         session=session, user_purchase=user_purchase
@@ -35,7 +48,11 @@ async def create_user_purchase(
             status_code=status.HTTP_201_CREATED,
             response_model=user_purchases_schemas.UserPurchasesUpdateResponse
             )
-async def user_purchase_update(id: int, user_purchase_update: user_purchases_schemas.UserPurchasesUpdate = Body(...)):
+async def user_purchase_update(
+    id: int,
+    user_purchase_update: user_purchases_schemas.UserPurchasesUpdate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Update a user purchase by ID.
 
