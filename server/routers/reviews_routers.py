@@ -68,7 +68,10 @@ async def review_update(
     return data
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(id: int,):
+async def delete_product(
+    id: int,
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Delete a Review by ID.
 
@@ -78,6 +81,15 @@ async def delete_product(id: int,):
     Returns:
     - Response with 204 status code if successful.
     """
+    review_product_query = session.query(Review).filter(Review.id == id)
+    product_review = review_product_query.first()
+
+    # Check if the current user is authorized to delete the review product
+    if current_user.id != product_review.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform requested action",
+        )
     data = review_helper.helper_delete_product(session=session, id=id)
     return data
 
