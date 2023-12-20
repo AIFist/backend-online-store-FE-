@@ -1,10 +1,11 @@
-from fastapi import Body, status, Depends
+from fastapi import Body, status, Depends, HTTPException
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import reviews_schemas
 from server.db import review_helper
 from server.utils import oauth2
 from typing import List
+from server.models.models import Review
 router = APIRouter(prefix="/review", tags=["Review  CRUD"])
 
 @router.post("/", 
@@ -39,7 +40,11 @@ async def create_review(
 
 
 @router.put("/{id}", status_code=status.HTTP_201_CREATED)
-async def review_update(id: int, review_update: reviews_schemas.UpdateReview = Body(...)):
+async def review_update(
+    id: int, 
+    review_update: reviews_schemas.UpdateReview = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Update a review by ID.
 
@@ -50,6 +55,15 @@ async def review_update(id: int, review_update: reviews_schemas.UpdateReview = B
     Returns:
     - Updated Review.
     """
+    review_product_query = session.query(Review).filter(Review.id == id)
+    product_review = review_product_query.first()
+
+    # Check if the current user is authorized to delete the favorite product
+    if current_user.id != product_review.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform requested action",
+        )
     data = review_helper.helper_review_update(session=session, id=id, review_update=review_update)
     return data
 
