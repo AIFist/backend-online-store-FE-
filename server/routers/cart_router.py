@@ -1,9 +1,11 @@
-from fastapi import Body, status
+from fastapi import Body, status, Depends, HTTPException
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import cart_schemas
 from server.db import cart_helper
 from typing import List
+from server.models.models import Cart
+from server.utils import oauth2
 router = APIRouter(prefix="/cart", tags=["Product Cart CRUD"])
 
 @router.post("/create", 
@@ -11,7 +13,8 @@ router = APIRouter(prefix="/cart", tags=["Product Cart CRUD"])
              response_model=cart_schemas.ProductCartCreateResponse
              )
 async def create_product_cart(
-    product_cart: cart_schemas.ProductCartCreate = Body(...)
+    sub_product_cart: cart_schemas.SubProductCartCreate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
 ):
     """
     Creates a new product cart.
@@ -22,6 +25,17 @@ async def create_product_cart(
     Returns:
         The created product cart data.
     """
+    product_cart = {
+        "user_id": current_user.id,
+        "product_id": sub_product_cart.product_id,
+        "quantity": sub_product_cart.quantity
+    }
+    try:
+        # Validate the data for creating the product cart
+        product_cart = cart_schemas.ProductCartCreate.model_validate(product_cart)
+    except ValueError as e:
+        print(f"An error occurred: {e}")
+    
 
     # Create the product cart in the database
     data = cart_helper.create_product_cart(

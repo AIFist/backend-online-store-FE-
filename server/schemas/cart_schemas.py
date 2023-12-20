@@ -3,10 +3,13 @@ from datetime import datetime
 from server.schemas.product_schemas import ProductCreate, ProductImageGet
 from typing import List
 
-class ProductCartCreate(BaseModel):
-    user_id: int
+class SubProductCartCreate(BaseModel):
     product_id: int
     quantity: int
+    
+class ProductCartCreate(SubProductCartCreate):
+    user_id: int
+    
     
 class ProductCartUpdate(BaseModel):
     quantity: int
