@@ -113,8 +113,9 @@ async def get_all_user_purchase(current_user: int = Depends(oauth2.get_current_u
 # TODO creat a function that get all user purchases  for given status
 @router.get("/{number}/{startindex}", status_code=status.HTTP_200_OK)
 async def get_all_user_purchases_for_given_number(
-    startindex: int,
     number: int,
+    startindex: int,
+    
     # current_user: int = Depends(oauth2.get_current_user),
 ):
     """
@@ -123,6 +124,6 @@ async def get_all_user_purchases_for_given_number(
     Returns:
     - A list of user purchases for the given status.
     """
-    
-    data = user_purchases_helper.helper_get_all_user_purchases_for_given_number(session=session,startindex=startindex,number=number)
+   # this function does not retrun given numbers of user purchases 
+    data= user_purchases_helper.helper_get_all_user_purchases_for_given_number(session=session, startindex=startindex,number=number)
     return data
