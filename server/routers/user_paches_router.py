@@ -1,4 +1,4 @@
-from fastapi import Body, status, Depends
+from fastapi import Body, status, Depends,HTTPException
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import user_purchases_schemas
@@ -63,13 +63,21 @@ async def user_purchase_update(
     Returns:
     - The updated user purchase.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     data = user_purchases_helper.helper_update_user_purchase(
         session=session, id=id, user_purchase_update=user_purchase_update
     )
     return data
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user_purchase(id: int):
+async def delete_user_purchase(
+    id: int,
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Delete a user purchase by ID.
 
@@ -79,19 +87,42 @@ async def delete_user_purchase(id: int):
     Returns:
     - The deleted user purchase.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     data = user_purchases_helper.helper_delete_user_purchase(session=session, id=id)
     return data
 
-@router.get("/{UserId}", 
+@router.get("/", 
             status_code=status.HTTP_200_OK,
             response_model=List[user_purchases_schemas.UserPurchasesGetAll]
             )
-async def get_all_user_purchase(UserId: int):
+async def get_all_user_purchase(current_user: int = Depends(oauth2.get_current_user)):
     """
     Get all user purchases.
 
     Returns:
     - A list of user purchases.
     """
+    UserId = int(current_user.id)
     data = user_purchases_helper.helper_get_all_user_purchases(session=session,UserId=UserId)
+    return data
+
+# TODO creat a function that get all user purchases  for given status
+@router.get("/{number}/{startindex}", status_code=status.HTTP_200_OK)
+async def get_all_user_purchases_for_given_number(
+    startindex: int,
+    number: int,
+    # current_user: int = Depends(oauth2.get_current_user),
+):
+    """
+    Get all user purchases for a given status.
+
+    Returns:
+    - A list of user purchases for the given status.
+    """
+    
+    data = user_purchases_helper.helper_get_all_user_purchases_for_given_number(session=session,startindex=startindex,number=number)
     return data
