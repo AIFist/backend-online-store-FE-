@@ -49,7 +49,11 @@ async def create_product_cart(
             status_code=status.HTTP_201_CREATED,
             response_model=cart_schemas.ProductCartUpdateResponse
             )
-async def product_cart_update(id: int, product_cart_update: cart_schemas.ProductCartUpdate = Body(...)):
+async def product_cart_update(
+    id: int,
+    product_cart_update: cart_schemas.ProductCartUpdate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Update a product cart by ID.
 
@@ -60,6 +64,15 @@ async def product_cart_update(id: int, product_cart_update: cart_schemas.Product
     Returns:
     - The updated product cart.
     """
+    product_cart_query = session.query(Cart).filter(Cart.id == id)
+    product_review = product_cart_query.first()
+
+    # Check if the current user is authorized to update the review
+    if current_user.id != product_review.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform requested action",
+        )
     data = cart_helper.update_product_cart(
         session=session, id=id, product_cart_update=product_cart_update
     )
