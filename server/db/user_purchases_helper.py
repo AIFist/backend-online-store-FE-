@@ -181,4 +181,31 @@ def helper_get_all_user_purchases_for_given_number(session, startindex: int, num
     Returns:
         A list of user purchases within the specified range.
     """
-    pass
+       # this function does not retrun given numbers of user purchases 
+
+    try:
+        # Query the carts, join with the Product and ProductImage tables
+        user_purchases = (
+            session.query(UserPurchase)
+            .join(Product, UserPurchase.product_id == Product.id)
+            .outerjoin(ProductImage, ProductImage.product_id == Product.id)
+            .options(
+                joinedload(UserPurchase.product)  # Use joinedload to eagerly load the associated Product
+                .joinedload(Product.images)  # Use joinedload to eagerly load the associated ProductImage
+            )
+            .offset(startindex)
+            .limit(number)
+            .all()
+        )
+
+        if not user_purchases:
+            # Raise a 404 exception if no products are found
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No products found")
+
+        return user_purchases
+
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        # Instead of rolling back here, let FastAPI handle the exception
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
