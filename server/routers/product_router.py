@@ -1,9 +1,10 @@
-from fastapi import Body, status
+from fastapi import Body, status, Depends, HTTPException
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_schemas
 from server.db import product_helper
 from typing import List
+from server.utils import oauth2
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 
@@ -11,7 +12,10 @@ router = APIRouter(prefix="/product", tags=["Product  CRUD"])
              status_code=status.HTTP_201_CREATED, 
              response_model=product_schemas.ProductCreateResponse
              )
-async def create_product(product_data: product_schemas.ProductCreate = Body(...)):
+async def create_product(
+    product_data: product_schemas.ProductCreate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Create a new product along with associated images.
     
@@ -21,6 +25,11 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
     Returns:
     - Created Product.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     
     data = product_helper.helper_create_product(session=session, product_data=product_data)
     return data
@@ -29,7 +38,10 @@ async def create_product(product_data: product_schemas.ProductCreate = Body(...)
 @router.post("/createall", 
              status_code=status.HTTP_201_CREATED,
              response_model=List[product_schemas.ProductCreateResponse])
-async def create_product(products_data: List[product_schemas.ProductCreate] = Body(...)):
+async def create_product(
+    products_data: List[product_schemas.ProductCreate] = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Create a new product along with associated images.
     
@@ -39,6 +51,11 @@ async def create_product(products_data: List[product_schemas.ProductCreate] = Bo
     Returns:
     - Created Product.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     return_list = []
     for product_data in products_data:
         data = product_helper.helper_create_product(session=session, product_data=product_data)
@@ -47,7 +64,9 @@ async def create_product(products_data: List[product_schemas.ProductCreate] = Bo
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(id: int):
+async def delete_product(
+    id: int,
+    current_user: int = Depends(oauth2.get_current_user),):
     """
     Delete a product by ID.
 
@@ -57,6 +76,11 @@ async def delete_product(id: int):
     Returns:
     - Response with 204 status code if successful.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     res = product_helper.helper_for_deleting_product(session=session, id=id)
     return res
 
@@ -66,7 +90,11 @@ async def delete_product(id: int):
             status_code=status.HTTP_201_CREATED,
             response_model=product_schemas.ProductUpadteResponse
             )
-async def update_product(id: int, product_update: product_schemas.ProductUpadte = Body(...)):
+async def update_product(
+    id: int,
+    product_update: product_schemas.ProductUpadte = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Update a product by ID.
 
@@ -77,6 +105,11 @@ async def update_product(id: int, product_update: product_schemas.ProductUpadte 
     Returns:
     - Updated Product.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     updated_product = product_helper.helper_update_product(session=session, id=id, product_update=product_update)
     return updated_product
 
