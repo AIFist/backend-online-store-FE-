@@ -36,38 +36,39 @@ async def create_user(user_data: user_schemas.GetUser = Body(...)):
 
     return user
 
-@router.post('/login')
-async def login(user_credentials: user_schemas.AuthUser):
-    """
-    Endpoint for user login. User provides email and password.
+# @router.post('/login')
+# async def login(user_credentials: user_schemas.AuthUser):
+#     """
+#     Endpoint for user login. User provides email and password.
 
-    Args:
-        user_credentials (user_schemas.AuthUser): JSON object containing email and password.
+#     Args:
+#         user_credentials (user_schemas.AuthUser): JSON object containing email and password.
 
-    Raises:
-        HTTPException: When invalid credentials are provided.
+#     Raises:
+#         HTTPException: When invalid credentials are provided.
 
-    Returns:
-        dict: A dictionary with a "message" key indicating successful login.
-    """
-    # Query the user from the database based on the provided email
-    user = session.query(User).filter(User.email == user_credentials.email).first()
+#     Returns:
+#         dict: A dictionary with a "message" key indicating successful login.
+#     """
+#     # Query the user from the database based on the provided email
+#     user = session.query(User).filter(User.email == user_credentials.email).first()
 
-    # Check if the user exists
-    if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
+#     # Check if the user exists
+#     if not user:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
-    # Verify the password using the hash_helper.verify() function
-    if not hash_helper.verify(user_credentials.password, user.password):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
+#     # Verify the password using the hash_helper.verify() function
+#     if not hash_helper.verify(user_credentials.password, user.password):
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
-    # Return a dictionary with a "message" key indicating successful login
-    return {"message": "Welcome and Happy Shopping"}
+#     # Return a dictionary with a "message" key indicating successful login
+#     return {"message": "Welcome and Happy Shopping"}
 
 
 @router.put("/update/{id}", status_code=status.HTTP_201_CREATED)
 async def update_user(id: int, user_update: user_schemas.UpdateUser = Body(...)):
     """
+    Note: this is not working
     Update the username and email of a user.
 
     Args:
@@ -80,17 +81,18 @@ async def update_user(id: int, user_update: user_schemas.UpdateUser = Body(...))
     Returns:
         JSON: The updated user's data.
     """
-    # Query the user by id
-    user_query = session.query(User).filter(User.id == id)
-    user = user_query.first()
+    pass
+    # # Query the user by id
+    # user_query = session.query(User).filter(User.id == id)
+    # user = user_query.first()
 
-    # If user does not exist, raise an exception
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} does not exist")
+    # # If user does not exist, raise an exception
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} does not exist")
 
-    # Update the user data
-    user_query.update(user_update.model_dump(), synchronize_session=False)
-    session.commit()
+    # # Update the user data
+    # user_query.update(user_update.model_dump(), synchronize_session=False)
+    # session.commit()
 
-    # Return the updated user's data
-    return user_query.first()
+    # # Return the updated user's data
+    # return user_query.first()

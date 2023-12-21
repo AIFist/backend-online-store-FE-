@@ -195,6 +195,7 @@ def helper_get_all_user_purchases_for_given_number(session, startindex: int, num
             )
             .offset(startindex)
             .limit(number)
+            .distinct(UserPurchase.id)
             .all()
         )
 

@@ -86,10 +86,10 @@ def helper_update_product_image(session, id: int, product_image:product_image_sc
         product_image_query = session.query(ProductImage).filter(ProductImage.id == id)
 
         # Get the review object
-        product_image = product_image_query.first()
+        product_image1 = product_image_query.first()
 
         # If the review does not exist, raise a 404 error
-        if product_image is None:
+        if product_image1 is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Review with id {id} does not exist")
 
