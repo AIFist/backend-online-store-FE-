@@ -1,16 +1,20 @@
-from fastapi import Body, status
+from fastapi import Body, status, Depends, HTTPException
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_cat_schemas
 from server.db import product_cat_helper
 from typing import List
+from server.utils import oauth2
 
 router = APIRouter(prefix="/product_cat", tags=["Product category CRUD"])
 
 @router.post("/create", 
              status_code=status.HTTP_201_CREATED,
              response_model=product_cat_schemas.ProductCategoryCreateResponse)
-async def create_product_category(product_category: product_cat_schemas.ProductCategoryCreate = Body(...)):
+async def create_product_category(
+    product_category: product_cat_schemas.ProductCategoryCreate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Create a new product category.
 
@@ -20,6 +24,11 @@ async def create_product_category(product_category: product_cat_schemas.ProductC
     Returns:
     - Newly created ProductCategory.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     data = product_cat_helper.helper_create_product_category(session=session, product_category=product_category)
     return data
 
@@ -28,7 +37,9 @@ async def create_product_category(product_category: product_cat_schemas.ProductC
              status_code=status.HTTP_201_CREATED,
              response_model=List[product_cat_schemas.ProductCategoryCreateResponse])
 async def create_product(
-    products_category: List[product_cat_schemas.ProductCategoryCreate] = Body(...)):
+    products_category: List[product_cat_schemas.ProductCategoryCreate] = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Create multiple product categories and return the created categories.
 
@@ -38,6 +49,11 @@ async def create_product(
     Returns:
     - A list of the created product categories.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     created_categories = []
     for product_category in products_category:
         created_category = product_cat_helper.helper_create_product_category(
@@ -49,7 +65,10 @@ async def create_product(
 
 # Delete a product category
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product_category(id: int):
+async def delete_product_category(
+    id: int,
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Delete a product category by its ID.
 
@@ -62,6 +81,11 @@ async def delete_product_category(id: int):
     Returns:
         Response: A response with no content.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     res =product_cat_helper.helper_delete_product_category(session=session, id=id)
     return res
 
@@ -69,8 +93,12 @@ async def delete_product_category(id: int):
 # Update a product category
 @router.put("/{id}", 
             status_code=status.HTTP_201_CREATED, 
-            response_model= product_cat_schemas.ProductCategoryUpdateResponse)
-async def update_product_category(id: int, productcat_update: product_cat_schemas.ProductCategoryUpdate = Body(...)):
+            response_model= product_cat_schemas.ProductCategoryUpdateResponse,)
+async def update_product_category(
+    id: int,
+    productcat_update: product_cat_schemas.ProductCategoryUpdate = Body(...),
+    current_user: int = Depends(oauth2.get_current_user),
+    ):
     """
     Update a product category by ID.
 
@@ -81,6 +109,11 @@ async def update_product_category(id: int, productcat_update: product_cat_schema
     Returns:
     - Updated ProductCategory.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
     updated_product = product_cat_helper.helper_update_product_category(session=session, id=id, productcat_update=productcat_update)
     return updated_product
 
