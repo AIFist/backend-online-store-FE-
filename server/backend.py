@@ -26,20 +26,29 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True,
 )
- 
-app.include_router(user_router.router)
-app.include_router(auth_router.router)
+
+
+# router for admin auth routes
 app.include_router(product_catogory_router.router)
 app.include_router(product_router.router)
-app.include_router(filter_products_router.router)
+app.include_router(product_image_router.router)
+app.include_router(featured_product_router.router)
+app.include_router(sales_router.router)
+
+
+# router for user auth routes
+app.include_router(user_router.router)
+app.include_router(auth_router.router)
 app.include_router(reviews_routers.router)
 app.include_router(cart_router.router)
 app.include_router(favorites_router.router)
 app.include_router(user_paches_router.router)
-app.include_router(sales_router.router)
+
+
+
+# neutral routes
+app.include_router(filter_products_router.router)
 app.include_router(landing_page_router.router)
-app.include_router(featured_product_router.router)
-app.include_router(product_image_router.router)
 
 # app.include_router(user_prompt_router.router)
 

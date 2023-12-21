@@ -4,7 +4,7 @@ from server.models.models1 import session
 from server.models.models import User
 from server.schemas import user_schemas
 from server.utils import hash_helper
-router = APIRouter(prefix="/user", tags=["User CRUD"])
+router = APIRouter(prefix="/user", tags=[" ------------------------ Required User Role ------------------------ \nUser CRUD"])
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
