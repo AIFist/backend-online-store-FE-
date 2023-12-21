@@ -6,7 +6,7 @@ from server.db import product_cat_helper
 from typing import List
 from server.utils import oauth2
 
-router = APIRouter(prefix="/product_cat", tags=["Product category CRUD"])
+router = APIRouter(prefix="/product_cat", tags=["----------------------Required Admin Role------------------------ Product category CRUD"])
 
 @router.post(
     "/create",

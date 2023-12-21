@@ -6,7 +6,7 @@ from typing import List
 from fastapi import  status
 from server.schemas import filter_products_schemas
 
-router = APIRouter(prefix="/productfilter", tags=["Filters for Product Endpoints"])
+router = APIRouter(prefix="/productfilter", tags=["------------------------neutral Auth ----------------------Filters for Product Endpoints"])
 
 
 @router.get("/getbyname/{product_name}/{number}/{startindex}", 
