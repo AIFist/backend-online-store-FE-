@@ -4,7 +4,6 @@ from server.models.models1 import session
 from server.schemas import user_purchases_schemas
 from server.db import  user_purchases_helper
 from typing import List
-from server.models.models import UserPurchase
 from server.utils import oauth2
 router = APIRouter(prefix="/user_purchases", tags=["User Purchases CRUD"])
 
@@ -110,11 +109,11 @@ async def get_all_user_purchase(current_user: int = Depends(oauth2.get_current_u
     data = user_purchases_helper.helper_get_all_user_purchases(session=session,UserId=UserId)
     return data
 
-# TODO creat a function that get all user purchases  for given status
 @router.get("/{number}/{startindex}", status_code=status.HTTP_200_OK)
 async def get_all_user_purchases_for_given_number(
     number: int,
     startindex: int,
+    current_user: int = Depends(oauth2.get_current_user),
     
     # current_user: int = Depends(oauth2.get_current_user),
 ):
@@ -124,6 +123,11 @@ async def get_all_user_purchases_for_given_number(
     Returns:
     - A list of user purchases for the given status.
     """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action."
+        )
    # this function does not retrun given numbers of user purchases 
     data= user_purchases_helper.helper_get_all_user_purchases_for_given_number(session=session, startindex=startindex,number=number)
     return data
