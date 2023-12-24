@@ -11,7 +11,7 @@ router = APIRouter(prefix="/productfilter", tags=["------------------------neutr
 
 @router.get("/getbyname/{product_name}/{number}/{startindex}", 
             status_code=status.HTTP_200_OK,
-            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
@@ -33,7 +33,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
 
 @router.get("/getproducts/{number}/{startindex}",
             status_code=status.HTTP_200_OK,
-            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_up_to_given_number(number: int, startindex: int):
     """
@@ -55,7 +55,7 @@ async def get_product_up_to_given_number(number: int, startindex: int):
 
 @router.get("/getbycategory/{category_id}/{number}/{startindex}",
             status_code= status.HTTP_200_OK,
-            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_by_category(category_id: int, number: int, startindex: int):
     """
@@ -79,7 +79,7 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
 
 @router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}", 
             status_code= status.HTTP_200_OK,
-            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
@@ -128,7 +128,7 @@ def get_product_by_size(product_size: str, number: int, startindex: int):
 
 @router.get("/filterbyprice/{min_price}/{max_price}/{number}/{product_name}/{startindex}",
             status_code=status.HTTP_200_OK,
-            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 def filter_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """

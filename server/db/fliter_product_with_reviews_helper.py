@@ -319,6 +319,7 @@ def get_featured_products(number: int, startindex: int):
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             cte.c.rownum,
@@ -330,8 +331,9 @@ def get_featured_products(number: int, startindex: int):
         .outerjoin(Review, Product.id == Review.product_id)
         .outerjoin(subquery, Product.id == subquery.c.product_id)
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(cte.c.rownum.between(startindex, startindex + number - 1))
-        .group_by(Product, ProductImage, cte.c.rownum, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, cte.c.rownum, Sales.discount_percent)
         .order_by(cte.c.rownum)
     )
 
