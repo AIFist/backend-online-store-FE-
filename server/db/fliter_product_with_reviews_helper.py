@@ -1,7 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy import func, select
-from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct
+from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct, ProductCategory
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
 
@@ -31,6 +31,7 @@ def get_products_with_images_and_reviews(product_name, startindex, number):
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name, 
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -39,10 +40,11 @@ def get_products_with_images_and_reviews(product_name, startindex, number):
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id) 
         .filter(Product.product_name.ilike(f'%{product_name}%'))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -74,6 +76,7 @@ def get_products(number: int, startindex: int):
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name, 
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -82,9 +85,10 @@ def get_products(number: int, startindex: int):
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage, ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -116,6 +120,7 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name, 
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -124,17 +129,18 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(Product.category_id == category_id)
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage, ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
 
     return query
 
-
+ # this function retruns 404 even if product  are in the database
 def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Retrieve products based on category, search keyword, and pagination.
@@ -159,6 +165,7 @@ def get_product_by_category_keyword(category_id: int, search_keyword: str, numbe
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -167,11 +174,12 @@ def get_product_by_category_keyword(category_id: int, search_keyword: str, numbe
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(or_(Product.product_name.ilike(f'%{search_keyword}%')), Product.description.ilike(f'%{search_keyword}%'))
         .filter(Product.category_id == category_id)
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -205,6 +213,7 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -213,10 +222,11 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(Product.product_size.ilike(f'%{product_size}%'))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -250,6 +260,7 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -258,12 +269,13 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(Product.price >= min_price)
         .filter(Product.price <= max_price)
         .filter(Product.product_name.ilike(f'%{product_name}%'))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -307,6 +319,7 @@ def get_featured_products(number: int, startindex: int):
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             cte.c.rownum,
@@ -318,8 +331,9 @@ def get_featured_products(number: int, startindex: int):
         .outerjoin(Review, Product.id == Review.product_id)
         .outerjoin(subquery, Product.id == subquery.c.product_id)
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(cte.c.rownum.between(startindex, startindex + number - 1))
-        .group_by(Product, ProductImage, cte.c.rownum, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, cte.c.rownum, Sales.discount_percent)
         .order_by(cte.c.rownum)
     )
 

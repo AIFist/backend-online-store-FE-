@@ -14,6 +14,7 @@ class LandingPageProductCResponse(ProductCreateResponse):
     num_reviews: int
     avg_rating: Optional[float] | None
     discount_percent: Optional[float] | None
+    category_name: str
     
 class LandingPageUpToGivenNumberImageResponse(LandingPageProductImage):
     product_id : int

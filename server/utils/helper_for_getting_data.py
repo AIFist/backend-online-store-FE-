@@ -78,8 +78,9 @@ def helper_for_filters_with_review_and_discount(session, query):
             "num_reviews": num_reviews,
             "avg_rating": avg_rating,
             "discount_percent": avg_discount_percent,
+            "category_name": category_name,
         }
-        for product, image, num_reviews, avg_rating, avg_discount_percent in result
+        for product, image,category_name, num_reviews, avg_rating, avg_discount_percent in result
     ]
 
     return products_with_images_and_reviews    
@@ -136,7 +137,7 @@ def helper_get_featured_products(session, query):
     result = session.execute(query).all()
 
     # Use defaultdict to organize products with their images
-    products_dict = defaultdict(lambda: {"Product": None, "ProductImages": [], "num_reviews": 0, "avg_rating": None, "rownum": None, "discount_percent": None})
+    products_dict = defaultdict(lambda: {"Product": None, "ProductImages": [], "num_reviews": 0, "avg_rating": None, "rownum": None, "discount_percent": None, "category_name": None})
 
     for row in result:
         product_id = row.Product.id
@@ -154,6 +155,7 @@ def helper_get_featured_products(session, query):
         # Save the rownum for each product
         products_dict[product_id]["rownum"] = row.rownum
         products_dict[product_id]["discount_percent"] = row.latest_discount_percent
+        products_dict[product_id]["category_name"] = row.category_name
 
     # Convert the dictionary values to a list of results
     final_result = [result for result in products_dict.values()]
