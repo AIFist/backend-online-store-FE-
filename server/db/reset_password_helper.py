@@ -1,5 +1,6 @@
 from server.models.models import User
 import smtplib
+from server.utils import hash_helper
 from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
@@ -13,11 +14,21 @@ email1: str = os.getenv("email")
 def get_user_by_email(session, email: str):
     user_query = session.query(User).filter(User.email == email)
     user = user_query.first()
-    if user:
-        return True
-    return False
+    return user
 
+# Function to update user password
+def update_user_password(session, user: User, new_password: str):
+    # Hash the new password
+    # hashed_password = pwd_context.hash(new_password)
+    hashed_password = hash_helper.hash(new_password)
+    # user_data.password = hashed_password
+    # Update the user's hashed password
+    user.password = hashed_password
 
+    # Commit changes to the database
+    session.add(user)
+    session.commit()
+    session.refresh(user)
 
 
 
