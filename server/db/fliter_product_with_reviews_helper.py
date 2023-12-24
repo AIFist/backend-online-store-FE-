@@ -213,6 +213,7 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -221,10 +222,11 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(Product.product_size.ilike(f'%{product_size}%'))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
@@ -258,6 +260,7 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
         select(
             Product,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -266,12 +269,13 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
         .filter(Product.price >= min_price)
         .filter(Product.price <= max_price)
         .filter(Product.product_name.ilike(f'%{product_name}%'))
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage, Sales.discount_percent)
+        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )

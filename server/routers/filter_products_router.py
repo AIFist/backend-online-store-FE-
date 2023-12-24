@@ -105,7 +105,7 @@ async def get_product_by_keyword(category_id: int, search_keyword: str, number: 
 
 @router.get("/searchbyproductsize/{product_size}/{number}/{startindex}",
             status_code=status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 def get_product_by_size(product_size: str, number: int, startindex: int):
     """
@@ -128,7 +128,7 @@ def get_product_by_size(product_size: str, number: int, startindex: int):
 
 @router.get("/filterbyprice/{min_price}/{max_price}/{number}/{product_name}/{startindex}",
             status_code=status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 def filter_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """
