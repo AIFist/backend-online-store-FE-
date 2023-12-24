@@ -10,7 +10,7 @@ router = APIRouter(prefix="/reset", tags=["For reseting password"])
 
 
 # Route to initiate password reset
-@router.post("/password-reset/{email}", response_model=dict)
+@router.post("/forget_password", response_model=dict)
 async def initiate_password_reset(data: reset_password_schemas.ResetPasswordRequest = Body(...)):
     """
     Initiate a password reset for the given email.
@@ -37,7 +37,10 @@ async def initiate_password_reset(data: reset_password_schemas.ResetPasswordRequ
     return {"message": "Password reset initiated"}
 
 
-@router.post("/reset-password", response_model=dict)
+@router.post("/reset-password",
+             response_model=dict,
+             status_code=status.HTTP_201_CREATED
+             )
 async def reset_password(data: reset_password_schemas.ResetPassword = Body(...)):
     """
     Reset the user's password using the provided token.
