@@ -1,5 +1,5 @@
 from server.models.models1 import session
-from server.models.models import ProductImage, Review, UserPurchase, Product, Sales
+from server.models.models import ProductImage, Review, UserPurchase, Product, Sales, ProductCategory
 from sqlalchemy.sql.expression import func, desc
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, select, distinct
@@ -28,6 +28,7 @@ def get_random_products_helper(number_of_products: int):
         select(
             product_alias,
             ProductImage,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
@@ -35,11 +36,13 @@ def get_random_products_helper(number_of_products: int):
         .outerjoin(ProductImage)
         .outerjoin(Review)
         .outerjoin(Sales)
-        .filter(product_alias.id == random_product_ids.c.id)
-        .group_by(product_alias, ProductImage, Sales.discount_percent)
+        .outerjoin(ProductCategory, product_alias.category_id == ProductCategory.id)  # Use product_alias here
+        .filter(product_alias.id == random_product_ids.c.id)  # Use product_alias here
+        .group_by(product_alias, ProductImage, ProductCategory.category_name, Sales.discount_percent)
         .order_by(product_alias.id)
         .distinct(product_alias.id)
     )
+
 
     return query
 
