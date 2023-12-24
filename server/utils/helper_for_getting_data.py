@@ -78,8 +78,9 @@ def helper_for_filters_with_review_and_discount(session, query):
             "num_reviews": num_reviews,
             "avg_rating": avg_rating,
             "discount_percent": avg_discount_percent,
+            "category_name": category_name,
         }
-        for product, image, num_reviews, avg_rating, avg_discount_percent in result
+        for product, image,category_name, num_reviews, avg_rating, avg_discount_percent in result
     ]
 
     return products_with_images_and_reviews    

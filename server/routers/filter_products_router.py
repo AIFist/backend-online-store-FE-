@@ -11,7 +11,7 @@ router = APIRouter(prefix="/productfilter", tags=["------------------------neutr
 
 @router.get("/getbyname/{product_name}/{number}/{startindex}", 
             status_code=status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_by_name(product_name: str, number: int, startindex: int):
     """
@@ -33,7 +33,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
 
 @router.get("/getproducts/{number}/{startindex}",
             status_code=status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_up_to_given_number(number: int, startindex: int):
     """
@@ -48,14 +48,14 @@ async def get_product_up_to_given_number(number: int, startindex: int):
     """
 
     query = fliter_product_with_reviews_helper.get_products(number=number, startindex=startindex)
-    
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
+    # return result
 
 
 @router.get("/getbycategory/{category_id}/{number}/{startindex}",
             status_code= status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_by_category(category_id: int, number: int, startindex: int):
     """
@@ -75,13 +75,16 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
 
+ # this function retruns 404 even if product  are in the database
 
 @router.get("/getbycategory_keyword/{category_id}/{search_keyword}/{number}/{startindex}", 
             status_code= status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
 async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
+    ERROR::
+    this function retruns 404 even if product  are in the database
     Get a list of products with their images based on the provided product category and search keyword.
 
     Parameters:
