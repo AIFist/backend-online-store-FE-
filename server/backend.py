@@ -14,7 +14,7 @@ from server.routers import (
     featured_product_router,
     product_image_router,
     auth_router,
-    
+    reset_password_router,
 )
 
 app = FastAPI(title="Shopping center App Backend")
@@ -39,6 +39,7 @@ app.include_router(sales_router.router)
 # router for user auth routes
 app.include_router(user_router.router)
 app.include_router(auth_router.router)
+app.include_router(reset_password_router.router)
 app.include_router(reviews_routers.router)
 app.include_router(cart_router.router)
 app.include_router(favorites_router.router)
