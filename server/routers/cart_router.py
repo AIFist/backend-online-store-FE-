@@ -28,6 +28,22 @@ async def create_product_cart(
     Returns:
         cart_schemas.ProductCartCreateResponse: The created product cart data.
     """
+    try:
+        product_cart_query = session.query(Cart).filter(
+            Cart.product_id == sub_product_cart.product_id,
+            Cart.user_id == current_user.id
+        )
+        product_cart = product_cart_query.first()
+        if product_cart:
+            product_cart.quantity += sub_product_cart.quantity
+            session.commit()
+            session.refresh(product_cart)
+            return product_cart
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    
     # Prepare the data for creating the product cart
     product_cart_data = {
         "user_id": current_user.id,
