@@ -6,6 +6,7 @@ from server.db import cart_helper
 from typing import List
 from server.models.models import Cart
 from server.utils import oauth2
+from sqlalchemy.exc import SQLAlchemyError
 router = APIRouter(prefix="/cart", tags=["Product Cart CRUD"])
 
 @router.post(
@@ -50,28 +51,40 @@ async def create_product_cart(
     return created_product_cart
    
 
-@router.put("/{id}", 
-            status_code=status.HTTP_201_CREATED,
-            response_model=cart_schemas.ProductCartUpdateResponse
-            )
+@router.put(
+    "/{id}",
+    status_code=status.HTTP_201_CREATED,
+    response_model=cart_schemas.ProductCartUpdateResponse,
+)
 async def product_cart_update(
     id: int,
     product_cart_update: cart_schemas.ProductCartUpdate = Body(...),
     current_user: int = Depends(oauth2.get_current_user),
-    ):
+):
     """
     Update a product cart by ID.
 
     Args:
-    - id: ID of the product cart to be updated.
-    - product_cart_update: ProductCartUpdate model containing updated data for the product cart.
+        - id: ID of the product cart to be updated.
+        - product_cart_update: ProductCartUpdate model containing updated data for the product cart.
 
     Returns:
-    - The updated product cart.
+        - The updated product cart.
     """
-    # Query the product cart by ID
-    product_cart_query = session.query(Cart).filter(Cart.id == id)
-    product_cart= product_cart_query.first()
+    try:
+        # Query the product cart by ID
+        product_cart_query = session.query(Cart).filter(Cart.id == id)
+        product_cart = product_cart_query.first()
+    except SQLAlchemyError as e:
+        # Print the error message
+        print(f"An error occurred: {e}")
+
+        # Rollback the transaction
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error while updating product cart",
+        )
 
     # Check if the current user is authorized to update the product cart
     if current_user.id != product_cart.user_id:
@@ -79,12 +92,12 @@ async def product_cart_update(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to perform requested action",
         )
-    
+
     # Update the product cart
     data = cart_helper.update_product_cart(
         session=session, id=id, product_cart_update=product_cart_update
     )
-    
+
     return data
 
 
@@ -106,8 +119,19 @@ async def delete_product_cart(
     Raises:
     - HTTPException: If the current user is not authorized to perform the requested action.
     """
-    # Retrieve the product cart from the database
-    product_cart = session.query(Cart).filter(Cart.id == id).first()
+    try:
+        # Retrieve the product cart from the database
+        product_cart = session.query(Cart).filter(Cart.id == id).first()
+    except SQLAlchemyError as e:
+        # Print the error message
+        print(f"An error occurred: {e}")
+
+        # Rollback the transaction
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error while deleting product cart",
+        )
 
     # Check if the current user is authorized to delete the product cart
     if current_user.id != product_cart.user_id:

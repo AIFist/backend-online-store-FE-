@@ -50,21 +50,36 @@ def helper_delete_product_image(session, id: int):
     Returns:
         Response: A response with no content.
     """
-    # Query the product category by ID
-    product_image_query = session.query(ProductImage).filter(ProductImage.id == id)
-    product_cat = product_image_query.first()
+    try:
+        # Query the product category by ID
+        product_image_query = session.query(ProductImage).filter(ProductImage.id == id)
+        product_cat = product_image_query.first()
 
-    # Check if the product category exists
-    if product_cat is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Product Category with id {id} does not exist")
+        # Check if the product category exists
+        if product_cat is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product Category with id {id} does not exist")
 
-    # Delete the product category
-    product_image_query.delete(synchronize_session=False)
-    session.commit()
+        # Delete the product category
+        product_image_query.delete(synchronize_session=False)
+        session.commit()
 
-    # Return a response with no content
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+        # Return a response with no content
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except SQLAlchemyError as e:
+        # Print the error message
+        print(f"An error occurred: {e}")
+
+        # Rollback the transaction
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while processing your request. \n most probably product with id {id} does not exist."
+        )
+
+    finally:
+        # Close the session
+        session.close()
 
 def helper_update_product_image(session, id: int, product_image:product_image_schemas.ProductImageUpdate ):
     """
