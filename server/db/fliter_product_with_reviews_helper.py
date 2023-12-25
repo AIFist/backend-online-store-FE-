@@ -140,7 +140,7 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
 
     return query
 
- # this function retruns 404 even if product  are in the database
+ # this function retruns is working but it is not searching form the product description
 def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Retrieve products based on category, search keyword, and pagination.
@@ -175,7 +175,8 @@ def get_product_by_category_keyword(category_id: int, search_keyword: str, numbe
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
         .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
-        .filter(or_(Product.product_name.ilike(f'%{search_keyword}%')), Product.description.ilike(f'%{search_keyword}%'))
+        # .filter(or_(Product.product_name.ilike(f'%{search_keyword}%')), Product.description.ilike(f'%{search_keyword}%'))
+        .filter(Product.product_name.ilike(f'%{search_keyword}%'))        
         .filter(Product.category_id == category_id)
         .offset(startindex)
         .limit(number)
