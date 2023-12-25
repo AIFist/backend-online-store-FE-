@@ -6,6 +6,8 @@ from server.db import review_helper
 from server.utils import oauth2
 from typing import List
 from server.models.models import Review
+from sqlalchemy.exc import SQLAlchemyError
+
 router = APIRouter(prefix="/review", tags=["Review  CRUD"])
 
 @router.post("/", 
@@ -61,9 +63,17 @@ async def review_update(
     Returns:
     - Updated Review.
     """
-    # Query the review to be updated
-    review_product_query = session.query(Review).filter(Review.id == id)
-    product_review = review_product_query.first()
+    try:
+        # Query the review to be updated
+        review_product_query = session.query(Review).filter(Review.id == id)
+        product_review = review_product_query.first()
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while processing your request. \n most probably review with id {id} does not exist or user with id {current_user.id} does not exist."
+            
+        )
 
     # Check if the current user is authorized to update the review
     if current_user.id != product_review.user_id:
@@ -96,8 +106,15 @@ async def delete_product(
     Returns:
     - Response with 204 status code if successful.
     """
-    # Get the product review with the given ID
-    product_review = session.query(Review).filter(Review.id == id).first()
+    try:
+        # Get the product review with the given ID
+        product_review = session.query(Review).filter(Review.id == id).first()
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while processing your request. \n most probably review with id {id} does not exist or user with id {current_user.id} does not exist."
+        )
 
     # Check if the current user is authorized to delete the product review
     if current_user.id != product_review.user_id:

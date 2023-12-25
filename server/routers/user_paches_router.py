@@ -5,6 +5,8 @@ from server.schemas import user_purchases_schemas
 from server.db import  user_purchases_helper
 from typing import List
 from server.utils import oauth2
+
+
 router = APIRouter(prefix="/user_purchases", tags=["User Purchases CRUD"])
 
 
@@ -79,6 +81,8 @@ async def user_purchase_update(
     
     return data
 
+
+
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_purchase(
     id: int,
@@ -104,6 +108,8 @@ async def delete_user_purchase(
         )
     data = user_purchases_helper.helper_delete_user_purchase(session=session, id=id)
     return data
+
+
 
 @router.get(
     "/", 
@@ -132,6 +138,8 @@ async def get_all_user_purchase(
     )
     
     return data
+
+
 
 @router.get("/{number}/{startindex}", status_code=status.HTTP_200_OK)
 async def get_all_user_purchases_for_given_number(
