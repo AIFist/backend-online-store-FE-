@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status,Response
 from sqlalchemy import func, select, select
-from server.models.models import Product, ProductImage, Sales, Review
+from server.models.models import Product, ProductImage, Sales, Review, ProductCategory
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_schemas
 from sqlalchemy import or_, and_
@@ -207,6 +207,7 @@ def get_product_by_id(product_id: int):
     query = (
         select(
             Product,
+            ProductCategory.category_name,
             func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("discount_percent"),
@@ -216,9 +217,10 @@ def get_product_by_id(product_id: int):
         .outerjoin(Review)
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id) 
         .filter(Product.id == product_id)
         .options(joinedload(Product.images))  # Use joinedload to eagerly load images
-        .group_by(Product, Sales.discount_percent, ProductImage)
+        .group_by(Product, Sales.discount_percent, ProductImage, ProductCategory.category_name,)
         .order_by(Product.id)
         .distinct(Product.id, ProductImage.id)
     )

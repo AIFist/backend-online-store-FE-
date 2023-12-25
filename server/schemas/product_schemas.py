@@ -65,4 +65,5 @@ class ProductGetResponseAdvance(BaseModel):
     num_reviews: int
     avg_rating: Optional[float] | None
     discount_percent: Optional[float] | None
+    category_name: str
     
