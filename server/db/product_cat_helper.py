@@ -73,72 +73,78 @@ def helper_delete_product_category(session, id: int):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 def helper_update_product_category(session, id: int, productcat_update: product_cat_schemas.ProductCategoryUpdate):
-    
     """
     Update a product category in the database.
+
     Args:
-        session: SQLAlchemy session object.
+        session (sqlalchemy.orm.session.Session): SQLAlchemy session object.
         id (int): ID of the product category to update.
-        productcat_update (ProductCategoryUpdate): Object containing the updated data.
+        productcat_update (product_cat_schemas.ProductCategoryUpdate): Object containing the updated data.
+
     Returns:
-        ProductCategory: The updated product category.
+        product_cat_schemas.ProductCategory: The updated product category.
+
     Raises:
         HTTPException: If the product category does not exist.
     """
-    
-    try: 
+
+    try:
         # Retrieve the product category from the database
         product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
-        
+
         # Check if the product category exists
         if not product_category:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Product Category with id {id} does not exist")
-        
+
         # Update the parent category ID if it is not provided
         if productcat_update.parent_category_id is None:
             productcat_update.parent_category_id = product_category.parent_category_id
-        
+
         # Update the product category in the database
-        session.query(ProductCategory).filter(ProductCategory.id == id).update(productcat_update.model_dump(), synchronize_session=False)
+        session.query(ProductCategory).filter(ProductCategory.id == id).update(productcat_update.model_dump(),
+                                                                              synchronize_session=False)
         session.commit()
     except SQLAlchemyError as e:
         print(f"An error occurred: {e}")
         session.rollback()
     finally:
         session.close()
-    
+
     # Retrieve and return the updated product category
     return session.query(ProductCategory).filter(ProductCategory.id == id).first()
 
 
 def helper_get_product_category(session):
-     
     """
     Retrieves all product categories from the database.
+
     Args:
         session: The SQLAlchemy database session.
+
     Returns:
-        A list of tuples with category id and name.
-        
+        A list of dictionaries with category id and name.
+
     Raises:
         HTTPException: If the product category table is empty.
+        HTTPException: If there is a database error while retrieving product categories.
     """
-    
-     # Query all product categories
-    categories = session.query(ProductCategory.id, ProductCategory.category_name).all()
-    
-    # Create a list of tuples with category id and name
-    result = [{"id": int(category.id), "category_name": category.category_name} for category in categories]
-    if result:
-        return result
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Product Category table is empty")
-        
+    try:
+        # Query all product categories
+        categories = session.query(ProductCategory.id, ProductCategory.category_name).all()
+
+        # Create a list of dictionaries with category id and name
+        result = [{"id": int(category.id), "category_name": category.category_name} for category in categories]
+        if result:
+            return result
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product Category table is empty")
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        session.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error while retrieving product categories")
 
 def helper_get_one_product_category(session, id: int):
-    
     """
     Retrieve a single product category from the database by ID.
     
@@ -152,10 +158,20 @@ def helper_get_one_product_category(session, id: int):
     Raises:
         HTTPException: If the product category with the given ID is not found.
     """
-    
-    product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
-    if not product_category:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Product Category with id {id} was not found")
+    try:
+        # Query the database for the product category with the specified ID
+        product_category = session.query(ProductCategory).filter(ProductCategory.id == id).first()
         
-    return product_category
+        # If the product category does not exist, raise an HTTPException
+        if not product_category:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product Category with id {id} was not found")
+            
+        return product_category
+    except SQLAlchemyError as e:
+        # If there is an error during the database operation, rollback the session,
+        # raise an HTTPException with a 500 status code, and provide an error message
+        print(f"An error occurred: {e}")
+        session.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Database error while retrieving product category")

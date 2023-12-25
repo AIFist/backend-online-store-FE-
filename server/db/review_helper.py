@@ -141,18 +141,27 @@ def helper_get_all_review_of_one_product(session, id:int):
     Returns:
         List[Review]: A list of Review objects representing the reviews of the product.
     """
-    
-    # Query the database for reviews of the given product ID
-    review_query = session.query(Review).filter(Review.product_id == id)
-    
-    # Get all the reviews
-    reviews = review_query.all()
-    
-    # If there are no reviews, raise an HTTPException with a 404 status code
-    if not reviews:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with id {id} does not have any review"
-        )
+    try:
+        # Query the database for reviews of the given product ID
+        review_query = session.query(Review).filter(Review.product_id == id)
         
-    return reviews
+        # Get all the reviews
+        reviews = review_query.all()
+        
+        # If there are no reviews, raise an HTTPException with a 404 status code
+        if not reviews:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Product with id {id} does not have any review"
+            )
+            
+        return reviews
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors and rollback the transaction
+        print(f"An error occurred: {e}")
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while processing your request. \n most probably product with id {id} does not exist."
+        )
+

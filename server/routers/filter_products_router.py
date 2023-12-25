@@ -83,8 +83,7 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
             )
 async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
-    ERROR::
-    this function retruns 404 even if product  are in the database
+    Note: The search keyword is working product name 
     Get a list of products with their images based on the provided product category and search keyword.
 
     Parameters:

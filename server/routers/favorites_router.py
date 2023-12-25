@@ -6,7 +6,7 @@ from server.db import  favorites_helper
 from server.utils import oauth2
 from typing import List
 from server.models.models import Favorite as Favorites
-
+from sqlalchemy.exc import SQLAlchemyError
 
 router = APIRouter(prefix="/favorites", tags=["Product favorite CRUD"])
 @router.post(
@@ -69,9 +69,20 @@ async def delete_product_favorite(
     Returns:
         dict: The deleted product favorite.
     """
-    # Query the favorite product by ID
-    favorite_product_query = session.query(Favorites).filter(Favorites.id == id)
-    product_favorite = favorite_product_query.first()
+    try:
+        # Query the favorite product by ID
+        favorite_product_query = session.query(Favorites).filter(Favorites.id == id)
+        product_favorite = favorite_product_query.first()
+    except SQLAlchemyError as e:
+        # Print the error message
+        print(f"An error occurred: {e}")
+        
+        # Rollback the transaction
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error while deleting product favorite",
+        )
 
     # Check if the current user is authorized to delete the favorite product
     if current_user.id != product_favorite.user_id:
