@@ -13,7 +13,7 @@ router = APIRouter(prefix="/user_purchases", tags=["User Purchases CRUD"])
 @router.post(
     "/create",
     status_code=status.HTTP_201_CREATED,
-    response_model=user_purchases_schemas.SubUserPurchasesCreate,
+    response_model=user_purchases_schemas.UserPurchasesCreateResponse,
 )
 async def create_user_purchase(
     sub_user_purchase: user_purchases_schemas.SubUserPurchasesCreate = Body(...),

@@ -10,6 +10,11 @@ class GetUser(BaseModel):
     billing_address: Optional[str] | None
     shipping_address:  Optional[str] | None
 
+class GetUserResponse(BaseModel) :
+    username: str
+    email :EmailStr
+    role:str =Field(default="user")
+
 
 class AuthUser(BaseModel):
     email: EmailStr

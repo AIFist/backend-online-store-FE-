@@ -6,6 +6,8 @@ from server.schemas.product_schemas import ProductCreateResponse,ProductImageCre
 class SubUserPurchasesCreate(BaseModel):
     product_id: int
     status: str = Field(default="pending")
+
+
 class UserPurchasesCreate(SubUserPurchasesCreate):
     user_id: int
     
@@ -15,7 +17,7 @@ class  UserPurchasesUpdate(BaseModel):
     status: str
 
 
-class UserPurchasesCreateResponse(UserPurchasesCreate):
+class UserPurchasesCreateResponse(SubUserPurchasesCreate):
     id: int
     created_at: datetime
     class Config:
