@@ -16,7 +16,7 @@ class UpdateReview(BaseModel):
     comment: str
 
 
-class CreateReviewResponse(CreateReview):
+class CreateReviewResponse(SubCreateReview):
     id: int
     created_at: datetime
     class Config:

@@ -47,7 +47,10 @@ async def create_review(
     return data
 
 
-@router.put("/{id}", status_code=status.HTTP_201_CREATED)
+@router.put("/{id}",
+            status_code=status.HTTP_201_CREATED,
+            response_model=reviews_schemas.UpdateReviewResponse
+            )
 async def review_update(
     id: int, 
     review_update: reviews_schemas.UpdateReview = Body(...),
