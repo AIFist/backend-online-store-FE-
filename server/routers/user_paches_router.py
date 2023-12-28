@@ -30,6 +30,7 @@ async def create_user_purchase(
         user_purchases_schemas.SubUserPurchasesCreate: The created user purchase data.
     """
     # Create a dictionary with the user purchase data
+    print(current_user.id)
     user_purchase = {
         "user_id": current_user.id,
         "product_id": sub_user_purchase.product_id,
@@ -38,7 +39,7 @@ async def create_user_purchase(
 
     try:
         # Validate the data for creating the user purchase
-        user_purchase = user_purchases_schemas.SubUserPurchasesCreate.model_validate(user_purchase)
+        user_purchase = user_purchases_schemas.UserPurchasesCreate.model_validate(user_purchase)
     except ValueError as e:
         print(f"An error occurred: {e}")
 
