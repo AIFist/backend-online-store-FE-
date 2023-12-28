@@ -14,7 +14,7 @@ class ProductCartCreate(SubProductCartCreate):
 class ProductCartUpdate(BaseModel):
     quantity: int
     
-class ProductCartCreateResponse(ProductCartCreate):
+class ProductCartCreateResponse(SubProductCartCreate):
     id: int
     created_at: datetime
     class Config:
