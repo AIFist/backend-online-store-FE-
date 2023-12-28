@@ -12,7 +12,7 @@ class ProductFavoriteCreate(ProductFavoriteSubCreate):
     user_id: int
 
 
-class ProductFavoriteCreateResponse(ProductFavoriteCreate):
+class ProductFavoriteCreateResponse(ProductFavoriteSubCreate):
     id : int
     created_at: datetime
 

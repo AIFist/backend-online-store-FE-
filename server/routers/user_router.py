@@ -7,7 +7,10 @@ from server.utils import hash_helper
 router = APIRouter(prefix="/user", tags=[" ------------------------ Required User Role ------------------------ \nUser CRUD"])
 
 
-@router.post("/create", status_code=status.HTTP_201_CREATED)
+@router.post("/create", 
+             status_code=status.HTTP_201_CREATED,
+             response_model=user_schemas.GetUserResponse
+             )
 async def create_user(user_data: user_schemas.GetUser = Body(...)):
     """
     Create a new user in the database.
