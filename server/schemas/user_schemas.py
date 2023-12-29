@@ -14,6 +14,10 @@ class GetUserResponse(BaseModel) :
     username: str
     email :EmailStr
     role:str =Field(default="user")
+    billing_address: Optional[str] | None
+    shipping_address:  Optional[str] | None
+    access_token: str
+    
 
 
 class AuthUser(BaseModel):

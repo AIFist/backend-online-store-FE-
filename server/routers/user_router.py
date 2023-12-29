@@ -4,6 +4,7 @@ from server.models.models1 import session
 from server.models.models import User
 from server.schemas import user_schemas
 from server.utils import hash_helper
+from server.utils import oauth2
 router = APIRouter(prefix="/user", tags=[" ------------------------ Required User Role ------------------------ \nUser CRUD"])
 
 
@@ -36,8 +37,23 @@ async def create_user(user_data: user_schemas.GetUser = Body(...)):
     session.add(user)
     session.commit()
     session.refresh(user)
-
-    return user
+    access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role})
+    user_data = {
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "billing_address": user.billing_address,
+        "shipping_address": user.shipping_address,
+        "access_token": access_token
+    }
+    # try:
+    #     # Validate the data for creating the product cart
+    #     validated_product_cart_data = cart_schemas.ProductCartCreate.model_validate(
+    #         product_cart_data
+    #     )
+    # except ValueError as e:
+    #     print(f"An error occurred: {e}")
+    return user_data
 
 
 @router.put("/update/{id}", status_code=status.HTTP_201_CREATED)
