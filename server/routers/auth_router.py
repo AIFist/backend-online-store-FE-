@@ -29,6 +29,21 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends()):
         print(e)
         db.rollback()
 
+    data = {"access_token": access_token, 
+            "token_type": "bearer",
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name, 
+            "last_name": user.last_name, 
+            "role": user.role,
+            "billing_address": user.billing_address, 
+            "shipping_address": user.shipping_address
+            }
+    try:
+        data_model = token_schemas.Token.model_validate(data)
+        # Return the access token and the token type as a dictionary
+        return data_model
+    except ValueError as e:
+        print(f"An error occurred: {e}")
 
-    # Return the access token and the token type as a dictionary
-    return {"access_token": access_token, "token_type": "bearer"}
+    
