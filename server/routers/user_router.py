@@ -22,6 +22,7 @@ async def create_user(user_data: user_schemas.GetUser = Body(...)):
     Returns:
         User: The created user data.
     """
+
     email_exists = session.query(User).filter(User.email == user_data.email).first()
     username_exists = session.query(User).filter(User.username == user_data.username).first() 
     if email_exists and username_exists:

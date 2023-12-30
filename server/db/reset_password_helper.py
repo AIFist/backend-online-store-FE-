@@ -98,7 +98,9 @@ def send_reset_email(email: str, token: str):
 
     # Email content
     subject = "Password Reset"
+    
     body = f"Click the following link to reset your password: http://localhost:60602/reset-password?token={token}"
+
 
     # Create MIMEText object
     message = MIMEText(body)
