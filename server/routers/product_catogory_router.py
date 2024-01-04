@@ -189,3 +189,18 @@ async def get_one_product_category(id: int):
     """
     data = product_cat_helper.helper_get_one_product_category(session=session, id=id)
     return data
+
+
+@router.get("/",
+            response_model=list[product_cat_schemas.ProductCategoryWithSubCat]
+            )
+async def get_product_category_all():
+    """
+    Get all product categories with their sub-categories.
+
+    Returns:
+        list[product_cat_schemas.ProductCategoryWithSubCat]: A list of product categories with their sub-categories.
+    """
+    
+    data = product_cat_helper.helper_get_all_subcategories(session=session)
+    return data

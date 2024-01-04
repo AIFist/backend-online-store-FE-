@@ -2,7 +2,7 @@ from fastapi import status,HTTPException, Response
 from server.models.models import ProductCategory
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import product_cat_schemas
-
+from sqlalchemy.orm import aliased
 
 def helper_create_product_category(session, product_category: product_cat_schemas.ProductCategoryCreate ):
     """
@@ -175,3 +175,50 @@ def helper_get_one_product_category(session, id: int):
         session.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Database error while retrieving product category")
+
+
+def helper_get_all_subcategories(session):
+    """
+    Retrieves all subcategories for a given category.
+
+    :param session: The database session.
+    :type session: sqlalchemy.orm.session.Session
+    :return: A list of dictionaries representing the categories and their subcategories.
+    :rtype: list
+    """
+    # Alias for the self-referencing relationship
+    sub_category_alias = aliased(ProductCategory)
+
+    # Query to retrieve products and their subcategories
+    result = (
+        session.query(
+            ProductCategory.id.label('id'),
+            ProductCategory.category_name.label('category_name'),
+            sub_category_alias.id.label('sub_id'),
+            sub_category_alias.category_name.label('sub_category_name')
+        )
+        .outerjoin(sub_category_alias, ProductCategory.subcategories)
+        .filter(ProductCategory.parent_category_id.is_(None))  # Assuming root categories have parent_category_id as NULL
+        .all()
+    )
+
+    # Organizing the result into the desired structure
+    output = []
+    current_category = None
+
+    for row in result:
+        if not current_category or current_category['id'] != row.id:
+            current_category = {
+                'id': row.id,
+                'category_name': row.category_name,
+                'sub_cate': []
+            }
+            output.append(current_category)
+
+        if row.sub_id is not None:
+            current_category['sub_cate'].append({
+                'id': row.sub_id,
+                'category_name': row.sub_category_name
+            })
+
+    return output
