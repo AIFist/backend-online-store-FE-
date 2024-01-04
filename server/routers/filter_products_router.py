@@ -174,3 +174,24 @@ async def get_featured_product_up_to_given_number(number: int, startindex: int):
     result =helper_for_getting_data.helper_get_featured_products(session= session, query=query)
     # result = session.execute(query).all()
     return result
+
+
+@router.get("/dealoftheday/{number}/{startindex}",
+            status_code=status.HTTP_200_OK,
+            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            )
+async def deal_of_the_day(number: int, startindex: int):
+    """
+    Get a list of products who has highest sales with their images up to the specified number.
+
+    Parameters:
+    - number: The maximum number of rows to retrieve.
+    - startindex: The starting index of the rows to retrieve.
+
+    Returns:
+    - List of products with images.
+    """
+
+    query = fliter_product_with_reviews_helper.deal_of_the_day(number=number, startindex=startindex)
+    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
+    return data
