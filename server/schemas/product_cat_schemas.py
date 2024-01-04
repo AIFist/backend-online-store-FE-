@@ -25,9 +25,14 @@ class ProductCategoryUpdateResponse(ProductCategoryCreateResponse):
 class ProductCategoryGetResponse(ProductCategoryCreateResponse):
     pass
 
+
 class ProductCategoryGetALLResponse(BaseModel):
     id: int
     category_name: str
 
     class Config:
         from_attributes = True
+
+
+class ProductCategoryWithSubCat(ProductCategoryGetALLResponse):
+    sub_cate: Optional[list[ProductCategoryGetALLResponse]] | list

@@ -45,5 +45,3 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends()):
         return data_model
     except ValueError as e:
         print(f"An error occurred: {e}")
-
-    
