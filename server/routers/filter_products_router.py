@@ -212,6 +212,6 @@ async def new_arrivales(number: int, startindex: int):
     - List of products with images.
     """
 
-    query = fliter_product_with_reviews_helper.new_arrivals(number=number, startindex=startindex)
-    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
-    return data
+    query = fliter_product_with_reviews_helper.new_arrivals(session=session,number=number, startindex=startindex)
+    # data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
+    return query

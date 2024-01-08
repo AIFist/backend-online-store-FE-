@@ -391,51 +391,11 @@ def deal_of_the_day(number: int, startindex: int):
 
 from sqlalchemy import func, select, outerjoin, and_, distinct
 # not working at all
-def new_arrivals(number: int, startindex: int):
-    subquery = (
-        select(
-            func.row_number().over(
-                partition_by=Product.id,
-                order_by=Product.created_at.desc()
-            ).label("row_number"),
-            Product.id.label("product_id"),
-            func.max(Product.created_at).label("max_created_at")
-        )
-        .group_by(Product.id)
-        .alias("latest_products")
-    )
-
+def new_arrivals(session, number: int, startindex: int):
     query = (
-        select(
-            Product,
-            ProductImage,
-            ProductCategory.category_name,
-            func.count(distinct(Review.id)).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating"),
-            Sales.discount_percent.label("latest_discount_percent")
-        )
-        .outerjoin(ProductImage)
-        .outerjoin(Review)
-        .outerjoin(
-            Sales, 
-            and_(
-                Product.id == Sales.product_id,
-                Sales.sale_date == subquery.c.max_created_at
-            )
-        )
-        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)
-        .outerjoin(subquery, and_(
-            Product.id == subquery.c.product_id,
-            subquery.c.row_number == 1
-        ))
-        .offset(startindex)
-        .limit(number)
-        .group_by(
-            Product.id,
-            ProductImage.id,
-            ProductCategory.category_name,
-            Sales.discount_percent
-        )
-        .order_by(subquery.c.max_created_at.desc(), Product.id)
+        session.query(Product)
+        .order_by(Product.created_at.desc())
+        .limit(15)
     )
-    return query
+    results = query.all()
+    return results
