@@ -341,7 +341,6 @@ def get_featured_products(number: int, startindex: int):
     return query
 
 
-
 def deal_of_the_day(number: int, startindex: int):
     """
     Generates the deal of the day by retrieving products and their details.
@@ -389,20 +388,6 @@ def deal_of_the_day(number: int, startindex: int):
     return query
 
 
-from sqlalchemy import func, select, outerjoin, and_, distinct
-from sqlalchemy.orm import sessionmaker, joinedload
-# not working at all
-# def new_arrivals(session, number: int):
-#     query = (
-#         session.query(Product)
-#         .options(joinedload(Product.images))
-#         .order_by(Product.created_at.desc())
-#         .limit(number)
-#     )
-#     results = query.all()
-#     return results
-
-
 def new_arrivals(session, number: int):
     query = (
         session.query(Product.id)
@@ -412,8 +397,6 @@ def new_arrivals(session, number: int):
     results = [result[0] for result in query.all()]
     return results
 
-
-from sqlalchemy import and_, func, select
 
 def get_product_details_query(product_ids):
     subquery = (
