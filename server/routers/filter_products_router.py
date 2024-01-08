@@ -197,10 +197,10 @@ async def deal_of_the_day(number: int, startindex: int):
     return data
 
 
-@router.get("/newarrivals/{number}/{startindex}",
+@router.get("/newarrivals/{number}",
             status_code=status.HTTP_200_OK
             )
-async def new_arrivales(number: int, startindex: int):
+async def new_arrivales(number: int):
     """
     Get a list of products who has highest sales with their images up to the specified number.
 
@@ -212,6 +212,9 @@ async def new_arrivales(number: int, startindex: int):
     - List of products with images.
     """
 
-    query = fliter_product_with_reviews_helper.new_arrivals(session=session,number=number, startindex=startindex)
-    # data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
-    return query
+    product_ids = fliter_product_with_reviews_helper.new_arrivals(session=session,number=number)
+    query =fliter_product_with_reviews_helper.get_product_details_query(product_ids)
+    result = session.execute(query).all()
+    re = result[::-1]
+    
+    return re

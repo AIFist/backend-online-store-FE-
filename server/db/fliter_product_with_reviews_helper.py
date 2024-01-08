@@ -390,12 +390,58 @@ def deal_of_the_day(number: int, startindex: int):
 
 
 from sqlalchemy import func, select, outerjoin, and_, distinct
+from sqlalchemy.orm import sessionmaker, joinedload
 # not working at all
-def new_arrivals(session, number: int, startindex: int):
+# def new_arrivals(session, number: int):
+#     query = (
+#         session.query(Product)
+#         .options(joinedload(Product.images))
+#         .order_by(Product.created_at.desc())
+#         .limit(number)
+#     )
+#     results = query.all()
+#     return results
+
+
+def new_arrivals(session, number: int):
     query = (
-        session.query(Product)
+        session.query(Product.id)
         .order_by(Product.created_at.desc())
-        .limit(15)
+        .limit(number)
     )
-    results = query.all()
+    results = [result[0] for result in query.all()]
     return results
+
+
+from sqlalchemy import and_, func, select
+
+def get_product_details_query(product_ids):
+    subquery = (
+        select(
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
+        )
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
+    )
+
+    query = (
+        select(
+            Product,
+            ProductImage,
+            ProductCategory.category_name,
+            func.count(Review.id).label("num_reviews"),
+            func.avg(Review.rating).label("avg_rating"),
+            Sales.discount_percent.label("latest_discount_percent")
+        )
+        .outerjoin(ProductImage)
+        .outerjoin(Review)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
+        .filter(Product.id.in_(product_ids))  # Filter by provided product IDs
+        .group_by(Product, ProductImage, ProductCategory.category_name, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
+    )
+    return query
