@@ -4,6 +4,8 @@ from sqlalchemy import func, select
 from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct, ProductCategory
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
+from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 
 
 
@@ -341,7 +343,6 @@ def get_featured_products(number: int, startindex: int):
     return query
 
 
-
 def deal_of_the_day(number: int, startindex: int):
     """
     Generates the deal of the day by retrieving products and their details.
@@ -389,20 +390,28 @@ def deal_of_the_day(number: int, startindex: int):
     return query
 
 
-from sqlalchemy import func, select, outerjoin, and_, distinct
-# not working at all
-def new_arrivals(number: int, startindex: int):
+def new_arrivals(session, number: int):
+    try:
+        query = (
+            session.query(Product.id)
+            .order_by(Product.created_at.desc())
+            .limit(number)
+        )
+        results = [result[0] for result in query.all()]
+        return results
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+
+def get_product_details_query(product_ids):
     subquery = (
         select(
-            func.row_number().over(
-                partition_by=Product.id,
-                order_by=Product.created_at.desc()
-            ).label("row_number"),
-            Product.id.label("product_id"),
-            func.max(Product.created_at).label("max_created_at")
+            Sales.product_id,
+            func.max(Sales.sale_date).label("max_sale_date")
         )
-        .group_by(Product.id)
-        .alias("latest_products")
+        .group_by(Sales.product_id)
+        .alias("latest_sales")
     )
 
     query = (
@@ -410,32 +419,18 @@ def new_arrivals(number: int, startindex: int):
             Product,
             ProductImage,
             ProductCategory.category_name,
-            func.count(distinct(Review.id)).label("num_reviews"),
+            func.count(Review.id).label("num_reviews"),
             func.avg(Review.rating).label("avg_rating"),
             Sales.discount_percent.label("latest_discount_percent")
         )
         .outerjoin(ProductImage)
         .outerjoin(Review)
-        .outerjoin(
-            Sales, 
-            and_(
-                Product.id == Sales.product_id,
-                Sales.sale_date == subquery.c.max_created_at
-            )
-        )
-        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)
-        .outerjoin(subquery, and_(
-            Product.id == subquery.c.product_id,
-            subquery.c.row_number == 1
-        ))
-        .offset(startindex)
-        .limit(number)
-        .group_by(
-            Product.id,
-            ProductImage.id,
-            ProductCategory.category_name,
-            Sales.discount_percent
-        )
-        .order_by(subquery.c.max_created_at.desc(), Product.id)
+        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
+        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
+        .filter(Product.id.in_(product_ids))  # Filter by provided product IDs
+        .group_by(Product, ProductImage, ProductCategory.category_name, Sales.discount_percent)
+        .order_by(Product.id)
+        .distinct(Product.id)
     )
     return query
