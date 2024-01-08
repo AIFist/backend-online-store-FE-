@@ -4,6 +4,8 @@ from sqlalchemy import func, select
 from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct, ProductCategory
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
+from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 
 
 
@@ -389,13 +391,17 @@ def deal_of_the_day(number: int, startindex: int):
 
 
 def new_arrivals(session, number: int):
-    query = (
-        session.query(Product.id)
-        .order_by(Product.created_at.desc())
-        .limit(number)
-    )
-    results = [result[0] for result in query.all()]
-    return results
+    try:
+        query = (
+            session.query(Product.id)
+            .order_by(Product.created_at.desc())
+            .limit(number)
+        )
+        results = [result[0] for result in query.all()]
+        return results
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 
 def get_product_details_query(product_ids):
