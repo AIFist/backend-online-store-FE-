@@ -1,15 +1,9 @@
-from sqlalchemy import func
-from sqlalchemy import select
-from sqlalchemy import func, select
 from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct, ProductCategory
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
-
-
-from sqlalchemy import select, func, or_
 
 def get_products_with_images_and_reviews(search_keyword, startindex, number):
     """
