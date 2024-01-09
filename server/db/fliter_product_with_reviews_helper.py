@@ -56,7 +56,6 @@ def get_products_with_images_and_reviews(search_keyword, startindex, number):
     return query
 
 
-
 def get_products(number: int, startindex: int):
     """
     Retrieves a list of products with their corresponding images.
@@ -99,6 +98,7 @@ def get_products(number: int, startindex: int):
         .distinct(Product.id)
     )
     return query
+
 
 def get_product_by_category(category_id: int,startindex: int, number: int):
     """
@@ -147,6 +147,8 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
     return query
 
  # this function retruns is working but it is not searching form the product description
+
+
 def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Retrieve products based on category, search keyword, and pagination.
@@ -240,6 +242,7 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
 
     return query
 
+
 def filter_product_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """
     Filter products by price range and return a query object.
@@ -289,6 +292,7 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
 
 
     return query
+
 
 def get_featured_products(number: int, startindex: int):
     """
@@ -380,7 +384,6 @@ def deal_of_the_day(session, number: int):
         # Rollback the session in case of an error and raise an HTTPException
         session.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
-
 
 
 def new_arrivals(session, number: int):
