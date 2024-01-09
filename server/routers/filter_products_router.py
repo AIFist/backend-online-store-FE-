@@ -177,11 +177,11 @@ async def get_featured_product_up_to_given_number(number: int, startindex: int):
     return result
 
 
-@router.get("/dealoftheday/{number}/{startindex}",
+@router.get("/dealoftheday/{number}",
             status_code=status.HTTP_200_OK,
-            response_model=List[filter_products_schemas.FilterProductsProductCResponse]
+            response_model=List[filter_products_schemas.ProductForNewArrivalesResponse]
             )
-async def deal_of_the_day(number: int, startindex: int):
+async def deal_of_the_day(number: int):
     """
     Get a list of products who has highest sales with their images up to the specified number.
 
@@ -193,9 +193,21 @@ async def deal_of_the_day(number: int, startindex: int):
     - List of products with images.
     """
 
-    query = fliter_product_with_reviews_helper.deal_of_the_day(number=number, startindex=startindex)
-    data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
-    return data
+    product_ids = fliter_product_with_reviews_helper.deal_of_the_day(session=session,number=number)
+    query = fliter_product_with_reviews_helper.get_product_details_query(product_ids)
+
+    try:
+        # Execute the query and retrieve the results
+        result = session.execute(query).all()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+    # Reverse the order of the results
+    re = result[::-1]
+
+    return re
+
 
 
 @router.get("/newarrivals/{number}",
