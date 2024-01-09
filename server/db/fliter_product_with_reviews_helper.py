@@ -356,21 +356,27 @@ def deal_of_the_day(session, number: int):
     """
     # Create the main query to retrieve products and their images
    # Query to get the top 10 product IDs with the newly added discount_percent
-    top_product_ids = (
-        session.query(
-            Product.id
+    try:
+        top_product_ids = (
+            session.query(
+                Product.id
+            )
+            .join(Sales, Product.id == Sales.product_id)
+            .filter(Sales.discount_percent.isnot(None))
+            .order_by(Sales.sale_date.desc())  # Order by sale date to get the latest discount first
+            .limit(number)
+            .all()
         )
-        .join(Sales, Product.id == Sales.product_id)
-        .filter(Sales.discount_percent.isnot(None))
-        .order_by(Sales.sale_date.desc())  # Order by sale date to get the latest discount first
-        .limit(number)
-        .all()
-    )
 
-    # Extracting product IDs from the result
-    product_ids = [product_id for (product_id,) in top_product_ids]
+        # Extracting product IDs from the result
+        product_ids = [product_id for (product_id,) in top_product_ids]
 
-    return product_ids
+        return product_ids
+    except SQLAlchemyError as e:
+        # Rollback the session in case of an error and raise an HTTPException
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
 
 
 def new_arrivals(session, number: int):
@@ -381,6 +387,9 @@ def new_arrivals(session, number: int):
         number (int): The number of products to retrieve.
     Returns:
         List[int]: The IDs of the most recent products.
+    
+    Raises:
+        HTTPException: If an error occurs during the query.
     """
     # Query the product IDs in descending order of creation date
     try:
@@ -399,6 +408,14 @@ def new_arrivals(session, number: int):
 
 
 def get_product_details_query(product_ids):
+    """
+    Retrieve the details of products based on their IDs.
+    Args:
+        product_ids (list): A list of product IDs.
+    Returns:
+        query: SQLAlchemy query object that retrieves the product details.
+    """
+    # Subquery to get the latest sale date for each product
     subquery = (
         select(
             Sales.product_id,
@@ -407,7 +424,7 @@ def get_product_details_query(product_ids):
         .group_by(Sales.product_id)
         .alias("latest_sales")
     )
-
+    # Main query to retrieve product details
     query = (
         select(
             Product,
