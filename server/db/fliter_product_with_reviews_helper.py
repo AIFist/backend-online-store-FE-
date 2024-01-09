@@ -343,7 +343,7 @@ def get_featured_products(number: int, startindex: int):
     return query
 
 
-def deal_of_the_day(number: int, startindex: int):
+def deal_of_the_day(session, number: int):
     """
     Generates the deal of the day by retrieving products and their details.
 
@@ -355,39 +355,22 @@ def deal_of_the_day(number: int, startindex: int):
         sqlalchemy.sql.selectable.Select: The query to retrieve the deal of the day products.
     """
     # Create the main query to retrieve products and their images
-    subquery = (
-        select(
-            Sales.product_id,
-            func.max(Sales.sale_date).label("max_sale_date")
+   # Query to get the top 10 product IDs with the newly added discount_percent
+    top_product_ids = (
+        session.query(
+            Product.id
         )
-        .group_by(Sales.product_id)
-        .alias("latest_sales")
+        .join(Sales, Product.id == Sales.product_id)
+        .filter(Sales.discount_percent.isnot(None))
+        .order_by(Sales.sale_date.desc())  # Order by sale date to get the latest discount first
+        .limit(number)
+        .all()
     )
 
-    query = (
-        select(
-            Product,
-            ProductImage,
-            ProductCategory.category_name, 
-            func.count(Review.id).label("num_reviews"),
-            func.avg(Review.rating).label("avg_rating"),
-            Sales.discount_percent.label("latest_discount_percent")
-        )
-        .outerjoin(ProductImage)
-        .outerjoin(Review)
-        .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
-        .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
-        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
-        # .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Join ProductCategory
-        .filter(Sales.discount_percent.isnot(None))  # Exclude rows where discount_percent is null
-        .offset(startindex)
-        .limit(number)
-        .group_by(Product.id, ProductImage, ProductCategory.category_name, Sales.discount_percent)
-        .order_by(Product.id, Sales.discount_percent.asc())  # Match expressions in ORDER BY with DISTINCT ON
-        # this is not working as expected and giving some error from sql
-        .distinct(Product.id)
-    )
-    return query
+    # Extracting product IDs from the result
+    product_ids = [product_id for (product_id,) in top_product_ids]
+
+    return product_ids
 
 
 def new_arrivals(session, number: int):
