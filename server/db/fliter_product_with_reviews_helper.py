@@ -391,6 +391,15 @@ def deal_of_the_day(number: int, startindex: int):
 
 
 def new_arrivals(session, number: int):
+    """
+    Retrieve the IDs of the most recent products.
+    Args:
+        session (Session): The SQLAlchemy session.
+        number (int): The number of products to retrieve.
+    Returns:
+        List[int]: The IDs of the most recent products.
+    """
+    # Query the product IDs in descending order of creation date
     try:
         query = (
             session.query(Product.id)
@@ -398,8 +407,10 @@ def new_arrivals(session, number: int):
             .limit(number)
         )
         results = [result[0] for result in query.all()]
+        # Retrieve the results and extract the IDs from the query results
         return results
     except SQLAlchemyError as e:
+        # Rollback the session in case of an error and raise an HTTPException
         session.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
