@@ -10,11 +10,11 @@ from sqlalchemy.exc import SQLAlchemyError
 router = APIRouter(prefix="/productfilter", tags=["------------------------neutral Auth ----------------------Filters for Product Endpoints"])
 
 
-@router.get("/getbyname/{product_name}/{number}/{startindex}", 
+@router.get("/getbyname/{search_keyword}/{number}/{startindex}", 
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-async def get_product_by_name(product_name: str, number: int, startindex: int):
+async def get_product_by_name(search_keyword: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product name.
 
@@ -26,7 +26,7 @@ async def get_product_by_name(product_name: str, number: int, startindex: int):
     Returns:
         dict: A dictionary containing the products and their images.
     """
-    query = fliter_product_with_reviews_helper.get_products_with_images_and_reviews(product_name=product_name, number=number, startindex=startindex)
+    query = fliter_product_with_reviews_helper.get_products_with_images_and_reviews(search_keyword=search_keyword, number=number, startindex=startindex)
 
     data = helper_for_getting_data.helper_for_filters_with_review_and_discount(session=session, query=query)
     return data
@@ -207,7 +207,6 @@ async def deal_of_the_day(number: int):
     re = result[::-1]
 
     return re
-
 
 
 @router.get("/newarrivals/{number}",

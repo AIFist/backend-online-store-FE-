@@ -9,11 +9,13 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 
-def get_products_with_images_and_reviews(product_name, startindex, number):
+from sqlalchemy import select, func, or_
+
+def get_products_with_images_and_reviews(search_keyword, startindex, number):
     """
     Get products with images and reviews.
     Args:
-        product_name (str): The name of the product to search for.
+        search_keyword (str): The keyword to search for in product name, description, or category name.
         startindex (int): The starting index to retrieve the products.
         number (int): The number of products to retrieve.
     Returns:
@@ -43,15 +45,23 @@ def get_products_with_images_and_reviews(product_name, startindex, number):
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
         .outerjoin(ProductCategory, Product.category_id == ProductCategory.id) 
-        .filter(Product.product_name.ilike(f'%{product_name}%'))
+        .filter(
+            or_(
+                Product.product_name.ilike(f'%{search_keyword}%'),
+                Product.description.ilike(f'%{search_keyword}%'),
+                ProductCategory.category_name.ilike(f'%{search_keyword}%')
+            )
+        )
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
+        .group_by(Product, ProductImage, ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
 
     return query
+
+
 
 def get_products(number: int, startindex: int):
     """
