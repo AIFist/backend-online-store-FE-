@@ -37,3 +37,22 @@ async def create_banner(
     # Create the banner using the helper function
     data = banner_helper.helper_create_banner(session=session, banner=banner)
     return data
+
+
+@router.delete("/delete/{banner_id}")
+async def delete_banner(
+    banner_id: int,
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    # Check if the current user has admin role
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action.",
+        )
+
+    # Delete the banner by ID
+    data = banner_helper.helper_delete_banner(session=session, banner_id=banner_id)
+
+    # Return the deleted banner
+    return data
