@@ -71,7 +71,19 @@ class Product(Base):
     purchases = relationship("UserPurchase", back_populates="product")  # Added this line
     sale = relationship("Sales", back_populates="product", uselist=False)  # Added this line
     featured_product = relationship("FeaturedProduct", back_populates="product")
+    banner = relationship("Banner", back_populates="product", uselist=False)
     # purchases = relationship("User", secondary="user_purchases", back_populates="purchases")  # Uncommented this line    
+
+
+class Banner(Base):
+    __tablename__ = 'banners'
+    id = Column(Integer, primary_key=True)
+    product_id = Column(Integer, ForeignKey('products.id', ondelete="CASCADE"), unique=True)
+    # Add other columns as needed
+
+    # Establishing relationships
+    product = relationship("Product", back_populates="banner", uselist=False)
+
 
 class Sales(Base):
     __tablename__ = 'sales'

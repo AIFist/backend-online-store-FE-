@@ -1,6 +1,3 @@
-from sqlalchemy import func
-from sqlalchemy import select
-from sqlalchemy import func, select
 from server.models.models import Product, ProductImage, Review, Sales, FeaturedProduct, ProductCategory
 from sqlalchemy import func, select
 from sqlalchemy import or_, and_
@@ -8,12 +5,11 @@ from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 
-
-def get_products_with_images_and_reviews(product_name, startindex, number):
+def get_products_with_images_and_reviews(search_keyword, startindex, number):
     """
     Get products with images and reviews.
     Args:
-        product_name (str): The name of the product to search for.
+        search_keyword (str): The keyword to search for in product name, description, or category name.
         startindex (int): The starting index to retrieve the products.
         number (int): The number of products to retrieve.
     Returns:
@@ -43,15 +39,22 @@ def get_products_with_images_and_reviews(product_name, startindex, number):
         .outerjoin(subquery, and_(Product.id == subquery.c.product_id))
         .outerjoin(Sales, and_(Product.id == Sales.product_id, Sales.sale_date == subquery.c.max_sale_date))
         .outerjoin(ProductCategory, Product.category_id == ProductCategory.id) 
-        .filter(Product.product_name.ilike(f'%{product_name}%'))
+        .filter(
+            or_(
+                Product.product_name.ilike(f'%{search_keyword}%'),
+                Product.description.ilike(f'%{search_keyword}%'),
+                ProductCategory.category_name.ilike(f'%{search_keyword}%')
+            )
+        )
         .offset(startindex)
         .limit(number)
-        .group_by(Product, ProductImage,ProductCategory.category_name, Sales.discount_percent)
+        .group_by(Product, ProductImage, ProductCategory.category_name, Sales.discount_percent)
         .order_by(Product.id)
         .distinct(Product.id)
     )
 
     return query
+
 
 def get_products(number: int, startindex: int):
     """
@@ -95,6 +98,7 @@ def get_products(number: int, startindex: int):
         .distinct(Product.id)
     )
     return query
+
 
 def get_product_by_category(category_id: int,startindex: int, number: int):
     """
@@ -143,6 +147,8 @@ def get_product_by_category(category_id: int,startindex: int, number: int):
     return query
 
  # this function retruns is working but it is not searching form the product description
+
+
 def get_product_by_category_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Retrieve products based on category, search keyword, and pagination.
@@ -236,6 +242,7 @@ def search_product_by_productsize(product_size: str, number: int, startindex: in
 
     return query
 
+
 def filter_product_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """
     Filter products by price range and return a query object.
@@ -285,6 +292,7 @@ def filter_product_by_price(min_price: float, max_price: float, number: int, pro
 
 
     return query
+
 
 def get_featured_products(number: int, startindex: int):
     """
@@ -376,7 +384,6 @@ def deal_of_the_day(session, number: int):
         # Rollback the session in case of an error and raise an HTTPException
         session.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
-
 
 
 def new_arrivals(session, number: int):
