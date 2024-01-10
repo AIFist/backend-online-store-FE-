@@ -1,7 +1,7 @@
 from fastapi import status,HTTPException, Response
 from server.schemas import banners_schemas
 from sqlalchemy.exc import SQLAlchemyError
-from server.models.models import Banner
+from server.models.models import Banner, Product
 
 def helper_create_banner(session, banner: banners_schemas.CreateBanner):
     """
@@ -66,3 +66,23 @@ def helper_delete_banner(session, banner_id: int):
     except SQLAlchemyError as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+
+def helper_get_all_banners(session, number: int):
+    """
+    Get all banners from the database.
+
+    Args:
+        session: The SQLAlchemy session object.
+        number: The number of banners to return.
+
+    Returns:
+        A list of banners.
+    """
+    # Query to get a list of product_id from the banners table
+    banner_products = session.query(Banner.product_id).all()
+
+    # Extract the product_ids from the result
+    product_ids_list = [product_id for product_id, in banner_products]
+
+    return product_ids_list

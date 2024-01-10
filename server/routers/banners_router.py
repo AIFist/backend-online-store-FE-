@@ -5,6 +5,8 @@ from server.schemas import banners_schemas
 from server.db import banner_helper
 from typing import List
 from server.utils import oauth2
+from server.db.fliter_product_with_reviews_helper import get_product_details_query
+from sqlalchemy.exc import SQLAlchemyError
 
 router = APIRouter(prefix="/banner", tags=["Banner CRUD"])
 
@@ -39,7 +41,7 @@ async def create_banner(
     return data
 
 
-@router.delete("/delete/{banner_id}")
+@router.delete("/delete/{banner_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_banner(
     banner_id: int,
     current_user: int = Depends(oauth2.get_current_user),
@@ -56,3 +58,28 @@ async def delete_banner(
 
     # Return the deleted banner
     return data
+
+
+@router.get("/getall/{number}", 
+            status_code= status.HTTP_200_OK,
+            response_model=List[banners_schemas.BannerGetAllResponse])
+def get_all_banners(
+    number: int, 
+    ):
+    
+    # Get all banners
+    product_ids = banner_helper.helper_get_all_banners(session=session, number=number)
+    # Generate the query to get the details of the products
+    query = get_product_details_query(product_ids)
+
+    try:
+        # Execute the query and retrieve the results
+        result = session.execute(query).all()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+    # Reverse the order of the results
+    re = result[::-1]
+
+    return re
