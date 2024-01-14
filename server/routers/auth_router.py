@@ -26,13 +26,15 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends()):
 
         # Generate an access token using the oauth2 library, passing the user_id as data
         access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role})
+        refresh_token = oauth2.create_refresh_token(data={"user_id": user.id, "role": user.role})
 
     except SQLAlchemyError as e:
     # Handle the exception
         print(e)
         db.rollback()
 
-    data = {"access_token": access_token, 
+    data = {"access_token": access_token,
+            "refresh_token": refresh_token, 
             "token_type": "bearer",
             "username": user.username,
             "email": user.email,
@@ -71,11 +73,9 @@ async def refresh_token(refresh_token: str = Depends(oauth2.oauth2_scheme)):
         user_id: str = payload.get("user_id")
         role :str = payload.get("role")
         if user_id is None:
-            print(" Id error ")
             raise credentials_exception
 
         if role is None:
-            print(" role error ")
             raise credentials_exception
         print(type(user_id))
         token_data = token_schemas.TokenData(id=str(user_id))
