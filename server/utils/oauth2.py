@@ -50,6 +50,7 @@ def verify_access_token(token: str, credentials_exeception):
          # following comment is for debugging
         # print("JWT error ")
         # logging.exception("Error during JWT processing or validation: %s", str(e))
+        print(e)
         raise credentials_exeception
 
     return token_data

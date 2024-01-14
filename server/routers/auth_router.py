@@ -5,6 +5,9 @@ from server.utils import hash_helper, oauth2
 from server.schemas import token_schemas
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.exc import SQLAlchemyError
+from jose import jwt,JWTError
+from pydantic import ValidationError
+
 router = APIRouter(tags=['Authentication'])
 
 
@@ -45,3 +48,40 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends()):
         return data_model
     except ValueError as e:
         print(f"An error occurred: {e}")
+
+
+@router.post("/refresh-token")
+async def refresh_token(refresh_token: str = Depends(oauth2.oauth2_scheme)):
+    """
+    Refreshes the access token using a refresh token.
+
+    Parameters:
+        refresh_token (str): The refresh token used to generate a new access token.
+
+    Returns:
+        dict: A dictionary containing the new access token and the token type.
+    """
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(refresh_token, oauth2.SECRET_KEY, algorithms=[oauth2.ALGORITHM])
+        user_id: str = payload.get("user_id")
+        role :str = payload.get("role")
+        if user_id is None:
+            print(" Id error ")
+            raise credentials_exception
+
+        if role is None:
+            print(" role error ")
+            raise credentials_exception
+        print(type(user_id))
+        token_data = token_schemas.TokenData(id=str(user_id))
+    except (JWTError, ValidationError):
+        raise credentials_exception
+    new_access_token = oauth2.create_access_token(data={"user_id": int(user_id), "role": role})
+    return {"access_token": new_access_token, "token_type": "bearer"}
+    
+    
