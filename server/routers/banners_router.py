@@ -46,6 +46,19 @@ async def delete_banner(
     banner_id: int,
     current_user: int = Depends(oauth2.get_current_user),
 ):
+    """
+    Deletes a banner by ID.
+
+    Parameters:
+        - `banner_id` (int): The ID of the banner to be deleted.
+        - `current_user` (int, optional): The ID of the current user. Defaults to `Depends(oauth2.get_current_user)`.
+
+    Raises:
+        - `HTTPException`: If the current user does not have admin role.
+
+    Returns:
+        - `None`
+    """
     # Check if the current user has admin role
     if current_user.role != "admin":
         raise HTTPException(
@@ -66,6 +79,34 @@ async def delete_banner(
 def get_all_banners(
     number: int, 
     ):
+    """
+    Retrieve all banners and their details.
+
+    Parameters:
+        number (int): The number of banners to retrieve.
+
+    Returns:
+        List[banners_schemas.BannerGetAllResponse]: A list of banner objects containing their details.
+
+    Raises:
+        HTTPException: If an error occurs during the retrieval process.
+
+    Example Usage:
+         get_all_banners(10)
+        [
+            {
+                "id": 1,
+                "name": "Banner 1",
+                "image_url": "https://example.com/banner1.jpg"
+            },
+            {
+                "id": 2,
+                "name": "Banner 2",
+                "image_url": "https://example.com/banner2.jpg"
+            },
+            ...
+        ]
+    """
     
     # Get all banners
     product_ids = banner_helper.helper_get_all_banners(session=session, number=number)

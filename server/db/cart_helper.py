@@ -3,6 +3,8 @@ from server.models.models import Cart, Product, ProductImage
 from sqlalchemy.exc import SQLAlchemyError
 from server.schemas import cart_schemas
 from sqlalchemy.orm import joinedload
+
+
 def create_product_cart(session, product_cart: cart_schemas.ProductCartCreate):
     """
     Create a new product in the cart.
@@ -42,6 +44,7 @@ def create_product_cart(session, product_cart: cart_schemas.ProductCartCreate):
     
     # Return the newly created product cart
     return new_product_cart
+
 
 def update_product_cart(session, id: int, product_cart_update: cart_schemas.ProductCartUpdate):
     """
@@ -86,6 +89,16 @@ def update_product_cart(session, id: int, product_cart_update: cart_schemas.Prod
 
 
 def delete_product_cart(session, id:int):
+    """
+    Deletes a product from the cart based on the given id.
+
+    Args:
+        session (Session): The SQLAlchemy session object.
+        id (int): The id of the product to be deleted.
+
+    Returns:
+        Response: The response object indicating the success or failure of the deletion.
+    """
     try:
         # Query the product with the given id
         product_query = session.query(Cart).filter(Cart.id == id)
@@ -111,28 +124,22 @@ def delete_product_cart(session, id:int):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-# def get_all_product_cart(session, UserId: int):
-#     try:
-#         # Query the carts with the given user_id
-#         carts = session.query(Cart).filter(Cart.user_id == UserId).all()
-
-#         # If no carts are found, you might want to handle it accordingly
-#         if not carts:
-#             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                                 detail=f"No products found for user with id {UserId}")
-
-#     except SQLAlchemyError as e:
-#         # Handle any SQLAlchemy errors
-#         print(f"An error occurred: {e}")
-#         session.rollback()  # Rollback the transaction
-
-#     finally:
-#         # Close the session
-#         session.close()
-
-#     return carts
 
 def get_all_product_for_cart(session, UserId:int):
+    """
+    Retrieves all products in the cart for a given user.
+
+    Parameters:
+        - session: SQLAlchemy session object used to interact with the database.
+        - UserId: The ID of the user whose cart products are being retrieved.
+
+    Returns:
+        - carts: A list of Cart objects representing the products in the user's cart.
+
+    Raises:
+        - HTTPException: If no products are found for the given user ID.
+        - SQLAlchemyError: If an error occurs while querying the database.
+    """
     try:
         # Query the carts, join with the Product and ProductImage tables
         carts = (
