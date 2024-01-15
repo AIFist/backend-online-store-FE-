@@ -4,6 +4,16 @@ from server.schemas import product_image_schemas
 from fastapi import status,HTTPException, Response
 
 def helper_create_product_image(session, product_image:product_image_schemas.ProductImageCreate ):
+    """
+    Create a new product image in the database.
+
+    Parameters:
+    - session: the database session
+    - product_image: an instance of the ProductImageCreate class containing the data for the new product image
+
+    Returns:
+    - new_product_image: the newly created ProductImage instance
+    """
     try:
         # Create a new ProductCategory instance using the data from the product_category model
         new_product_image = ProductImage(**product_image.model_dump())

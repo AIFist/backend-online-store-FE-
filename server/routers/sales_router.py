@@ -82,6 +82,20 @@ async def delete_product_sales(
     id: int,
     current_user: int = Depends(oauth2.get_current_user),
 ):
+    """
+    Delete product sales by ID.
+
+    Parameters:
+        id (int): The ID of the product sales to be deleted.
+        current_user (int, optional): The ID of the current user. Defaults to None.
+
+    Returns:
+        Any: The deleted product sales data.
+
+    Raises:
+        HTTPException: If the current user does not have admin role.
+
+    """ 
     # Check if the current user has admin role
     if current_user.role != "admin":
         raise HTTPException(
