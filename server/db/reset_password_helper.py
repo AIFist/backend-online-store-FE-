@@ -1,4 +1,4 @@
-from server.models.models import User
+from server.models.models import User, Token
 import smtplib
 from server.utils import hash_helper
 from email.mime.text import MIMEText
@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import status, HTTPException
 load_dotenv()
+
 
 password: str = os.getenv("password")
 email1: str = os.getenv("email")
@@ -74,7 +75,6 @@ def update_user_password(session, user: User, new_password: str):
         )
 
 
-
 def send_reset_email(email: str, token: str):
     """
     Send a password reset email to the specified email address.
@@ -126,3 +126,31 @@ def send_reset_email(email: str, token: str):
     except Exception as e:
         print(f"Error sending password reset email: {e}")
 
+
+def check_token_validity(session,token:str):
+    try:
+        token = session.query(Token).filter(Token.token == token).first()
+        session.close()
+        return token is not None
+    
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while processing your request. Try again "
+        )
+
+
+def add_token_blacklist(session,token:str, user_id:int):
+    try:
+        session.add(Token(token=token, user_id=user_id))
+        session.commit()
+        session.close()
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while processing your request. user with id {user_id} does not exist."
+        )

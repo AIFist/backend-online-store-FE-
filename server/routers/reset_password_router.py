@@ -60,8 +60,18 @@ async def reset_password(data: reset_password_schemas.ResetPassword = Body(...))
     # For example, update the user's password
     user = reset_password_helper.get_user_by_email(session=session, email=email)
     if user:
+        isVaildToken = reset_password_helper.check_token_validity(session=session,token=data.token)
+        if isVaildToken:
+            raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token is no longer valid",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+            
+    if user:
         # Update the user's password
         reset_password_helper.update_user_password(session=session, user=user, new_password=data.new_password)
+        reset_password_helper.add_token_blacklist(session=session,token=data.token, user_id=user.id)
         return {"message": "Password reset successfully"}
     else:
         raise HTTPException(
