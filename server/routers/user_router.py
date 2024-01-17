@@ -48,6 +48,8 @@ async def create_user(user_data: user_schemas.GetUser = Body(...)):
         session.commit()
         session.refresh(user)
         access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role})
+        refresh_token = oauth2.create_refresh_token(data={"user_id": user.id, "role": user.role})
+
         user_data = {
             "username": user.username,
             "email": user.email,
@@ -56,7 +58,8 @@ async def create_user(user_data: user_schemas.GetUser = Body(...)):
             "role": user.role,
             "billing_address": user.billing_address,
             "shipping_address": user.shipping_address,
-            "access_token": access_token
+            "access_token": access_token,
+            "refresh_token": refresh_token
         }
     except Exception as e:
         session.rollback()
