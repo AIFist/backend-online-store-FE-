@@ -21,6 +21,7 @@ class GetUserResponse(BaseModel) :
     billing_address: Optional[str] | None
     shipping_address:  Optional[str] | None
     access_token: str
+    refresh_token: str
     
 
 
