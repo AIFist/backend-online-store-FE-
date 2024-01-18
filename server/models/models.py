@@ -28,9 +28,21 @@ class User(Base):
     cart_items = relationship("Cart", back_populates="user")
     favorite_items = relationship("Favorite", back_populates="user")
     purchases = relationship("UserPurchase", back_populates="user")  # Added this line
+    tokens = relationship("Token", back_populates="user")
         
     
+class Token(Base):
+    __tablename__ = "tokens"
 
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    token = Column(String, index=True, unique=True, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+
+    # Add the relationship with the User model
+    user = relationship("User", back_populates="tokens")
+    
 class ProductCategory(Base):
     __tablename__ = 'product_categories'
     id = Column(Integer, primary_key=True)
