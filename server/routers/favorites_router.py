@@ -51,6 +51,28 @@ async def create_product_favorite(
     return data
 
 
+@router.delete("/delete-all", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_favorite(
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """
+    Delete all product favorites for the current user.
+
+    Args:
+    - current_user: int - The ID of the current user.
+
+    Returns:
+    - dict: The result of the delete operation.
+    """
+    # Get the user ID
+    user_id = int(current_user.id)
+    
+    # Delete all product favorites and return the result
+    data = favorites_helper.helper_delete_all_product_favorite(session=session, UserId=user_id)
+    
+    return data
+
+
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product_favorite(
     id: int,
@@ -108,6 +130,9 @@ async def get_all_product_favorite(current_user: int = Depends(oauth2.get_curren
     Returns:
         List[favorites_schemas.ProductFavoriteGetAll]: A list of product favorites.
     """
-    UserId = current_user.id
+    UserId = int(current_user.id)
     data = favorites_helper.helper_get_all_product_favorite(session=session,UserId=UserId)
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {UserId} does not exist")
     return data

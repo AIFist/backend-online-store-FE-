@@ -121,3 +121,36 @@ def helper_get_all_product_favorite(session, UserId):
         session.close()
     return data
     
+
+def helper_delete_all_product_favorite(session, UserId):
+    """
+    Delete all products favorited by a user.
+    
+    Args:
+        session: The database session
+        UserId: The ID of the user whose favorites will be deleted
+    """
+    
+    try:
+        # Query the products favorited by the user
+        product_query = session.query(Favorites).filter(Favorites.user_id == UserId)
+        products = product_query.all()
+
+        # If no products are found, raise a 404 error
+        if not products:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"No products favorited by user with id {UserId}")
+
+        # Delete the products
+        product_query.delete(synchronize_session=False)
+        session.commit()
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
