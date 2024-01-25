@@ -47,6 +47,9 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends()):
         print(e)
         db.rollback()
 
+    if access_token is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to generate access token")
+
     data = {"access_token": access_token,
             "refresh_token": refresh_token, 
             "token_type": "bearer",

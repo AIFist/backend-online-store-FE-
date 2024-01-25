@@ -169,3 +169,39 @@ def get_all_product_for_cart(session, UserId:int):
         session.close()
 
     return carts
+
+
+def delete_all_product_cart(session, id:int):
+    """
+    Deletes all products from the cart based on the given id.
+
+    Args:
+        session (Session): The SQLAlchemy session object.
+        id (int): The id of the product to be deleted.
+
+    Returns:
+        Response: The response object indicating the success or failure of the deletion.
+    """
+    try:
+        # Query the product with the given id
+        product_query = session.query(Cart).filter(Cart.user_id == id)
+        product = product_query.all()
+
+        # If product does not exist, raise 404 error
+        if product is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Product with id {id} does not exist")
+
+        # Delete the product
+        product_query.delete(synchronize_session=False)
+        session.commit()
+    except SQLAlchemyError as e:
+        # Handle any SQLAlchemy errors
+        print(f"An error occurred: {e}")
+        session.rollback()  # Rollback the transaction
+
+    finally:
+        # Close the session
+        session.close()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
