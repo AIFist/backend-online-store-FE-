@@ -117,6 +117,26 @@ async def product_cart_update(
     return data
 
 
+@router.delete("/remove-all", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_cart(
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """
+    Delete all products from the user's cart.
+    
+    Args:
+        current_user (int): The ID of the current user.
+    
+    Returns:
+        dict: A dictionary containing the result of the deletion operation.
+    """
+    
+    user_id = int(current_user.id)  # Get the ID of the current user
+    data = cart_helper.delete_all_product_cart(session=session, id=user_id)  # Delete all products from the user's cart
+    
+    return data  # Return the result of the deletion operation
+
+
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product_cart(
     id: int,
