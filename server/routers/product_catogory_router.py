@@ -1,10 +1,12 @@
-from fastapi import Body, status, Depends, HTTPException
+from fastapi import Body, status, Depends, HTTPException, Request
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_cat_schemas
 from server.db import product_cat_helper
 from typing import List
 from server.utils import oauth2
+from server.utils.rate_limit import rate_limited
+
 
 router = APIRouter(prefix="/product_cat", tags=["----------------------Required Admin Role------------------------ Product category CRUD"])
 
@@ -159,7 +161,8 @@ async def update_product_category(
 # Get all product categories with their IDs and names
 @router.get("/all", 
             response_model=List[product_cat_schemas.ProductCategoryGetALLResponse])
-async def get_product_category():
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_category(request: Request):
     """
     Get all product categories with their IDs and names.
 
@@ -174,7 +177,8 @@ async def get_product_category():
 
 # Get a specific product category by ID
 @router.get("/{id}", response_model=product_cat_schemas.ProductCategoryGetResponse)
-async def get_one_product_category(id: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_one_product_category(request: Request,id: int):
     """
     Retrieve a specific product category by ID.
 
@@ -194,7 +198,8 @@ async def get_one_product_category(id: int):
 @router.get("/",
             response_model=list[product_cat_schemas.ProductCategoryWithSubCat]
             )
-async def get_product_category_all():
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_category_all(request: Request):
     """
     Get all product categories with their sub-categories.
 
