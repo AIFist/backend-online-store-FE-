@@ -30,4 +30,5 @@ class LandingPageUpToGivenNumberResponse(BaseModel):
     avg_rating: Optional[float] | None
     discount_percent: Optional[float] | None
     purchase_count: Optional[int]| None
+    category_name: str
 
