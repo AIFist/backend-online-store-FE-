@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from server.utils.rate_limit import rate_limited
 from fastapi.middleware.cors import CORSMiddleware
 from server.routers import (
     sales_router,
@@ -56,13 +57,15 @@ app.include_router(landing_page_router.router)
 # app.include_router(user_prompt_router.router)
 
 @app.get("/ping")
-def health_check():
+@rate_limited(max_calls=10, time_frame=60)
+async def health_check(request:Request):
     """Health check."""
 
     return {"message": "Hello I am working!"}
 
 @app.get("/")
-def intro():
+@rate_limited(max_calls=10, time_frame=60)
+async def intro(request: Request):
     """
     This Endpoint for intro to this backend
     """

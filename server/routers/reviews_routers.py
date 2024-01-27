@@ -1,4 +1,4 @@
-from fastapi import Body, status, Depends, HTTPException
+from fastapi import Body, status, Depends, HTTPException, Request
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import reviews_schemas
@@ -7,6 +7,8 @@ from server.utils import oauth2
 from typing import List
 from server.models.models import Review
 from sqlalchemy.exc import SQLAlchemyError
+from server.utils.rate_limit import rate_limited
+
 
 router = APIRouter(prefix="/review", tags=["Review  CRUD"])
 
@@ -135,7 +137,8 @@ async def delete_product(
             status_code=status.HTTP_200_OK,
             response_model=List[reviews_schemas.GetAllReview]
             )
-def get_all_review_of_one_product(id: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_all_review_of_one_product(request: Request,id: int):
     """
     Get all reviews of a product based on its ID.
 
