@@ -74,6 +74,7 @@ def get_top_rated_products_helper(number_of_products: int = 5):
         select([
             Product,
             ProductImage,
+            ProductCategory.category_name,
             review_info_subquery.c.num_reviews,
             review_info_subquery.c.avg_rating,
             Sales.discount_percent.label("latest_discount_percent")
@@ -82,9 +83,10 @@ def get_top_rated_products_helper(number_of_products: int = 5):
         .outerjoin(ProductImage)
         .outerjoin(review_info_subquery, Product.id == review_info_subquery.c.id)
         .outerjoin(Sales, Product.id == Sales.product_id)
-        .filter(review_info_subquery.c.num_reviews > 0)  # Only include products with reviews
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Add this line for the missing join condition
+        .filter(review_info_subquery.c.num_reviews > 0)
         .order_by(desc(review_info_subquery.c.avg_rating), desc(review_info_subquery.c.num_reviews))
-        .distinct(review_info_subquery.c.avg_rating, review_info_subquery.c.num_reviews, Product.id)  # Ensure distinct products in the result
+        .distinct(review_info_subquery.c.avg_rating, review_info_subquery.c.num_reviews, Product.id)
         .limit(number_of_products)
     )
 
@@ -124,30 +126,28 @@ def get_trending_product_with_reviews(number_of_products: int):
     # Create the main query to retrieve product details with reviews and discounts
 
     query = (
-    select([
-        Product,
-        ProductImage,
-        review_info_subquery.c.num_reviews.label("num_reviews"),
-        review_info_subquery.c.avg_rating.label("avg_rating"),
-        Sales.discount_percent.label("discount_percent"),
-        purchase_counts_subquery.c.purchase_count.label("purchase_count")
-    ])
-    .select_from(Product)
-    .outerjoin(ProductImage)
-    .outerjoin(review_info_subquery, Product.id == review_info_subquery.c.id)
-    .outerjoin(Sales, Product.id == Sales.product_id)
-    .outerjoin(purchase_counts_subquery, Product.id == purchase_counts_subquery.c.product_id)
-    .filter(review_info_subquery.c.num_reviews > 0)
-    .order_by(
-        desc(review_info_subquery.c.num_reviews),
-        desc(purchase_counts_subquery.c.purchase_count),
-        desc(review_info_subquery.c.avg_rating)
-        # desc(review_info_subquery.c.num_reviews)
+        select([
+            Product,
+            ProductImage,
+            ProductCategory.category_name,
+            review_info_subquery.c.num_reviews.label("num_reviews"),
+            review_info_subquery.c.avg_rating.label("avg_rating"),
+            Sales.discount_percent.label("discount_percent"),
+            purchase_counts_subquery.c.purchase_count.label("purchase_count")
+        ])
+        .select_from(Product)
+        .outerjoin(ProductImage)
+        .outerjoin(review_info_subquery, Product.id == review_info_subquery.c.id)
+        .outerjoin(Sales, Product.id == Sales.product_id)
+        .outerjoin(purchase_counts_subquery, Product.id == purchase_counts_subquery.c.product_id)
+        .outerjoin(ProductCategory, Product.category_id == ProductCategory.id)  # Add this line for the missing join condition
+        .filter(review_info_subquery.c.num_reviews > 0)
+        .order_by(
+            desc(review_info_subquery.c.num_reviews),
+            desc(purchase_counts_subquery.c.purchase_count),
+            desc(review_info_subquery.c.avg_rating)
+        )
+        .distinct(review_info_subquery.c.avg_rating, review_info_subquery.c.num_reviews, purchase_counts_subquery.c.purchase_count, Product.id)
+        .limit(number_of_products)
     )
-    .distinct(review_info_subquery.c.avg_rating, review_info_subquery.c.num_reviews, purchase_counts_subquery.c.purchase_count, Product.id)  # Ensure distinct products in the result
-
-    .limit(number_of_products)
-    
-)
-
     return query

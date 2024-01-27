@@ -3,9 +3,11 @@ from server.models.models1 import session
 from server.db import fliter_product_with_reviews_helper
 from server.utils import helper_for_getting_data
 from typing import List
-from fastapi import  status, HTTPException
+from fastapi import  status, HTTPException, Request
 from server.schemas import filter_products_schemas
 from sqlalchemy.exc import SQLAlchemyError
+from server.utils.rate_limit import rate_limited
+
 
 router = APIRouter(prefix="/productfilter", tags=["------------------------neutral Auth ----------------------Filters for Product Endpoints"])
 
@@ -14,7 +16,8 @@ router = APIRouter(prefix="/productfilter", tags=["------------------------neutr
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-async def get_product_by_name(search_keyword: str, number: int, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_by_name(request: Request, search_keyword: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product name.
 
@@ -36,7 +39,8 @@ async def get_product_by_name(search_keyword: str, number: int, startindex: int)
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-async def get_product_up_to_given_number(number: int, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_up_to_given_number(request: Request,number: int, startindex: int):
     """
     Get a list of products with their images up to the specified number.
 
@@ -58,7 +62,8 @@ async def get_product_up_to_given_number(number: int, startindex: int):
             status_code= status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-async def get_product_by_category(category_id: int, number: int, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_by_category(request: Request,category_id: int, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided category ID.
 
@@ -82,7 +87,8 @@ async def get_product_by_category(category_id: int, number: int, startindex: int
             status_code= status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-async def get_product_by_keyword(category_id: int, search_keyword: str, number: int, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_by_keyword(request: Request,category_id: int, search_keyword: str, number: int, startindex: int):
     """
     Note: The search keyword is working product name 
     Get a list of products with their images based on the provided product category and search keyword.
@@ -107,7 +113,8 @@ async def get_product_by_keyword(category_id: int, search_keyword: str, number: 
             status_code=status.HTTP_200_OK,
             # response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-def get_product_by_size(product_size: str, number: int, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_product_by_size(request: Request,product_size: str, number: int, startindex: int):
     """
     Get multiple products with their images based on the provided product size.
 
@@ -130,7 +137,8 @@ def get_product_by_size(product_size: str, number: int, startindex: int):
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FilterProductsProductCResponse]
             )
-def filter_by_price(min_price: float, max_price: float, number: int, product_name: str, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def filter_by_price(request: Request, min_price: float, max_price: float, number: int, product_name: str, startindex: int):
     """
     Get multiple products with their images based on the provided price range and product name.
 
@@ -156,7 +164,8 @@ def filter_by_price(min_price: float, max_price: float, number: int, product_nam
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.FeaturedProductUpToGivenNumberResponse]
             )
-async def get_featured_product_up_to_given_number(number: int, startindex: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_featured_product_up_to_given_number(request: Request,number: int, startindex: int):
     """
     Note: This endpoint returns different data from the other endpoints.
     Get a list of products with their images up to the specified number.
@@ -181,7 +190,8 @@ async def get_featured_product_up_to_given_number(number: int, startindex: int):
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.ProductForNewArrivalesResponse]
             )
-async def deal_of_the_day(number: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def deal_of_the_day(request: Request, number: int):
     """
     Get a list of products who has highest sales with their images up to the specified number.
 
@@ -213,7 +223,8 @@ async def deal_of_the_day(number: int):
             status_code=status.HTTP_200_OK,
             response_model=List[filter_products_schemas.ProductForNewArrivalesResponse]
             )
-async def new_arrivales(number: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def new_arrivales(request: Request, number: int):
     """
     Get a list of products with the highest sales up to the specified number.
 

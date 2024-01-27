@@ -1,4 +1,4 @@
-from fastapi import Body, status, Depends, HTTPException
+from fastapi import Body, status, Depends, HTTPException, Request
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import banners_schemas
@@ -7,6 +7,8 @@ from typing import List
 from server.utils import oauth2
 from server.db.fliter_product_with_reviews_helper import get_product_details_query
 from sqlalchemy.exc import SQLAlchemyError
+from server.utils.rate_limit import rate_limited
+
 
 router = APIRouter(prefix="/banner", tags=["Banner CRUD"])
 
@@ -76,7 +78,9 @@ async def delete_banner(
 @router.get("/getall/{number}", 
             status_code= status.HTTP_200_OK,
             response_model=List[banners_schemas.BannerGetAllResponse])
-def get_all_banners(
+@rate_limited(max_calls=10, time_frame=60) 
+async def get_all_banners(
+    request: Request,
     number: int, 
     ):
     """

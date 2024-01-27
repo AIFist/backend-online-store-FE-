@@ -1,10 +1,14 @@
-from fastapi import Body, status, Depends, HTTPException
+from fastapi import Body, status, Depends, HTTPException, Request
 from fastapi.routing import APIRouter
 from server.models.models1 import session
 from server.schemas import product_schemas
 from server.db import product_helper
 from typing import List
 from server.utils import oauth2
+from server.utils.rate_limit import rate_limited
+
+
+
 router = APIRouter(prefix="/product", tags=["Product  CRUD"])
 
 
@@ -144,7 +148,8 @@ async def update_product(
             status_code=status.HTTP_200_OK,
             response_model=product_schemas.ProductGetResponseAdvance
             )
-async def get_one_product(product_id: int):
+@rate_limited(max_calls=10, time_frame=60)
+async def get_one_product(request: Request,product_id: int):
     """
     Get a single product with its images based on the provided product ID.
 
