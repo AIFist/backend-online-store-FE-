@@ -15,6 +15,18 @@ def rate_limited(max_calls: int, time_frame: int):
         decorator: The decorator function that wraps the original function.
     """
     def decorator(func):
+        """
+        Decorator function that limits the rate of calls to the wrapped function.
+        
+        Args:
+            func: The function to be wrapped.
+            request: The request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        
+        Returns:
+            The result of the wrapped function call.
+        """
         calls = []
         @wraps(func)
         async def wrapper(request: Request, *args, **kwargs):
